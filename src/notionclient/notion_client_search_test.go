@@ -2,6 +2,7 @@ package notionclient_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -29,7 +30,12 @@ const (
 
 	DATABASE_PATH                = TEST_DATA_PATH + "database/"
 	DATABASE_JSON                = DATABASE_PATH + "database.json"
+	DATABASE_QUERY_RESPONSE_JSON = DATABASE_PATH + "database_query_response.json"
 	DATABASE_NOT_EXIST_ERROR_STR = "Database does not exist"
+
+	BLOCK_PATH       = TEST_DATA_PATH + "block/"
+	PAGE_BLOCKS_JSON = BLOCK_PATH + "page_blocks.json"
+	BLOCKS_JSON      = BLOCK_PATH + "block.json"
 )
 
 // Mocking the NewClient from github.com/jomei/notionapi
@@ -44,7 +50,7 @@ func TestGetNotionClient(t *testing.T) {
 	})
 }
 
-// Mocking Search service from github.com/jomei/notionapi
+// Mocking the SearchService from github.com/jomei/notionapi
 type MockedSearchService struct {
 	response  *notionapi.SearchResponse
 	response2 *notionapi.SearchResponse
@@ -334,8 +340,9 @@ func TestGetDatabasesByName(t *testing.T) {
 	}
 }
 
+// Mocking the PageService from github.com/jomei/notionapi
 type MockedPageService struct {
-	Page *notionapi.Page
+	page *notionapi.Page
 	err  error
 }
 
@@ -344,7 +351,7 @@ func GetMockedPageService(t *testing.T, mockFilePath string, err error) *notionc
 		return &notionclient.NotionApiClient{
 			Client: &notionapi.Client{
 				Page: &MockedPageService{
-					Page: nil,
+					page: nil,
 					err:  err,
 				},
 			},
@@ -365,7 +372,7 @@ func GetMockedPageService(t *testing.T, mockFilePath string, err error) *notionc
 	return &notionclient.NotionApiClient{
 		Client: &notionapi.Client{
 			Page: &MockedPageService{
-				Page: page,
+				page: page,
 				err:  nil,
 			},
 		},
@@ -373,7 +380,7 @@ func GetMockedPageService(t *testing.T, mockFilePath string, err error) *notionc
 }
 
 func (srv *MockedPageService) Get(ctx context.Context, id notionapi.PageID) (*notionapi.Page, error) {
-	return srv.Page, srv.err
+	return srv.page, srv.err
 }
 
 func (srv *MockedPageService) Create(ctx context.Context, req *notionapi.PageCreateRequest) (*notionapi.Page, error) {
@@ -433,24 +440,27 @@ func TestGetPageByID(t *testing.T) {
 	}
 }
 
+// Mocking the DatabaseService from github.com/jomei/notionapi
 type MockedDatabaseService struct {
-	Database *notionapi.Database
-	err      error
+	database              *notionapi.Database
+	databaseQueryResponse *notionapi.DatabaseQueryResponse
+	err                   error
 }
 
-func GetMockedDatabaseService(t *testing.T, mockFilePath string, err error) *notionclient.NotionApiClient {
+func GetMockedDatabaseService(t *testing.T, databaseFilePath string, databaseQueryResponseFile string, err error) *notionclient.NotionApiClient {
 	if err != nil {
 		return &notionclient.NotionApiClient{
 			Client: &notionapi.Client{
 				Database: &MockedDatabaseService{
-					Database: nil,
-					err:      err,
+					database:              nil,
+					databaseQueryResponse: nil,
+					err:                   err,
 				},
 			},
 		}
 	}
 
-	jsonBytes, err := utils.ReadContentsOfFile(mockFilePath)
+	jsonBytes, err := utils.ReadContentsOfFile(databaseFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -461,28 +471,41 @@ func GetMockedDatabaseService(t *testing.T, mockFilePath string, err error) *not
 		t.Fatal(err)
 	}
 
+	jsonBytes2, err := utils.ReadContentsOfFile(databaseQueryResponseFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseQueryResponse := &notionapi.DatabaseQueryResponse{}
+	err = json.Unmarshal(jsonBytes2, &databaseQueryResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	return &notionclient.NotionApiClient{
 		Client: &notionapi.Client{
 			Database: &MockedDatabaseService{
-				Database: database,
-				err:      nil,
+				database:              database,
+				databaseQueryResponse: databaseQueryResponse,
+				err:                   nil,
 			},
 		},
 	}
 }
 
 func (srv *MockedDatabaseService) Get(ctx context.Context, id notionapi.DatabaseID) (*notionapi.Database, error) {
-	return srv.Database, srv.err
+	return srv.database, srv.err
 }
 
 func (srv *MockedDatabaseService) List(ctx context.Context, pagination *notionapi.Pagination) (*notionapi.DatabaseListResponse, error) {
-	// TODO
+	// Not needed. Just keeping as a placeholder for DatabaseService interface
+	// List REST API call is deprecated by Notion
 	return nil, nil
 }
 
 func (srv *MockedDatabaseService) Query(ctx context.Context, id notionapi.DatabaseID, req *notionapi.DatabaseQueryRequest) (*notionapi.DatabaseQueryResponse, error) {
 	// TODO
-	return nil, nil
+	return srv.databaseQueryResponse, srv.err
 }
 
 func (srv *MockedDatabaseService) Update(ctx context.Context, id notionapi.DatabaseID, req *notionapi.DatabaseUpdateRequest) (*notionapi.Database, error) {
@@ -497,34 +520,37 @@ func (srv *MockedDatabaseService) Create(ctx context.Context, req *notionapi.Dat
 
 func TestGetDatabaseByID(t *testing.T) {
 	tests := []struct {
-		name        string
-		databaseid  string
-		filePath    string
-		wantErr     bool
-		emptyResult bool
-		err         error
+		name                     string
+		databaseid               string
+		databaseFilePath         string
+		databaseQueryRspFilePath string
+		wantErr                  bool
+		emptyResult              bool
+		err                      error
 	}{
 		{
-			name:        "Get existing Database",
-			databaseid:  "3caeee7e-2884-4d17-a911-a17b5d1b92d4",
-			filePath:    DATABASE_JSON,
-			wantErr:     false,
-			emptyResult: false,
-			err:         nil,
+			name:                     "Get existing Database",
+			databaseid:               "db770044-b760-402e-862a-50fef8d6b5d9",
+			databaseFilePath:         DATABASE_JSON,
+			databaseQueryRspFilePath: DATABASE_QUERY_RESPONSE_JSON,
+			wantErr:                  false,
+			emptyResult:              false,
+			err:                      nil,
 		},
 		{
-			name:        "Get non-existing Database",
-			databaseid:  "3caeee7e-2774-4d17-a911-a17b5d1b92da",
-			filePath:    DATABASE_JSON,
-			wantErr:     true,
-			emptyResult: true,
-			err:         errors.New(DATABASE_NOT_EXIST_ERROR_STR),
+			name:                     "Get non-existing Database",
+			databaseid:               "3caeee7e-2774-4d17-a911-a17b5d1b92da",
+			databaseFilePath:         DATABASE_JSON,
+			databaseQueryRspFilePath: DATABASE_QUERY_RESPONSE_JSON,
+			wantErr:                  true,
+			emptyResult:              true,
+			err:                      errors.New(DATABASE_NOT_EXIST_ERROR_STR),
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := GetMockedDatabaseService(t, test.filePath, test.err)
+			client := GetMockedDatabaseService(t, test.databaseFilePath, test.databaseQueryRspFilePath, test.err)
 			database, err := client.GetDatabaseByID(context.Background(), notionclient.DatabaseID(test.databaseid))
 			if test.wantErr {
 				assert.Nil(t, database)
@@ -538,6 +564,323 @@ func TestGetDatabaseByID(t *testing.T) {
 				assert.Nil(t, err)
 			}
 		})
+	}
+}
 
+func TestGetPagesOfDatabase(t *testing.T) {
+	tests := []struct {
+		name                     string
+		databaseid               string
+		databaseFilePath         string
+		databaseQueryRspFilePath string
+		wantErr                  bool
+		emptyResult              bool
+		err                      error
+	}{
+		{
+			name:                     "Get all pages of database",
+			databaseid:               "db770044-b760-402e-862a-50fef8d6b5d9",
+			databaseFilePath:         DATABASE_JSON,
+			databaseQueryRspFilePath: DATABASE_QUERY_RESPONSE_JSON,
+			wantErr:                  false,
+			emptyResult:              false,
+			err:                      nil,
+		},
+		{
+			name:                     "Get non-existing Database",
+			databaseid:               "3caeee7e-2774-4d17-a911-a17b5d1b92da",
+			databaseFilePath:         DATABASE_JSON,
+			databaseQueryRspFilePath: DATABASE_QUERY_RESPONSE_JSON,
+			wantErr:                  true,
+			emptyResult:              true,
+			err:                      errors.New(DATABASE_NOT_EXIST_ERROR_STR),
+		},
+		{
+			name:                     "Get zero pages of Database",
+			databaseid:               "3caeee7e-2774-4d17-a911-a17b5d1b92da",
+			databaseFilePath:         DATABASE_JSON,
+			databaseQueryRspFilePath: EMPTY_SEARCH_RESULT,
+			wantErr:                  false,
+			emptyResult:              true,
+			err:                      nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := GetMockedDatabaseService(t, test.databaseFilePath, test.databaseQueryRspFilePath, test.err)
+			pages, _, err := client.GetPagesOfDatabase(context.Background(), notionclient.DatabaseID(test.databaseid), notionapi.Cursor(""))
+			if test.wantErr {
+				assert.Nil(t, pages)
+				assert.NotNil(t, err)
+			} else {
+				if test.emptyResult {
+					assert.Empty(t, pages)
+				} else {
+					assert.NotEmpty(t, pages)
+				}
+				assert.Nil(t, err)
+			}
+		})
+
+	}
+}
+
+// Mocking the BlockService from github.com/jomei/notionapi
+type MockedBlockService struct {
+	childBlocks *notionapi.GetChildrenResponse
+	block       notionapi.Block
+	err         error
+}
+
+func GetMockedBlockService(t *testing.T, childBlocksFilePath string, blockFilePath string, err error) *notionclient.NotionApiClient {
+	if err != nil {
+		return &notionclient.NotionApiClient{
+			Client: &notionapi.Client{
+				Block: &MockedBlockService{
+					childBlocks: nil,
+					block:       nil,
+					err:         err,
+				},
+			},
+		}
+	}
+
+	jsonBytes, err := utils.ReadContentsOfFile(childBlocksFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	childBlocks := &notionapi.GetChildrenResponse{}
+	err = json.Unmarshal(jsonBytes, &childBlocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	jsonBytes2, err := utils.ReadContentsOfFile(blockFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var response map[string]interface{}
+	err = json.Unmarshal(jsonBytes2, &response)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	block, err := decodeBlock(response)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &notionclient.NotionApiClient{
+		Client: &notionapi.Client{
+			Block: &MockedBlockService{
+				childBlocks: childBlocks,
+				block:       block,
+				err:         nil,
+			},
+		},
+	}
+}
+
+// Helper function to decode block into respective blocktype
+func decodeBlock(raw map[string]interface{}) (notionapi.Block, error) {
+	var b notionapi.Block
+	switch notionapi.BlockType(raw["type"].(string)) {
+	case notionapi.BlockTypeParagraph:
+		b = &notionapi.ParagraphBlock{}
+	case notionapi.BlockTypeHeading1:
+		b = &notionapi.Heading1Block{}
+	case notionapi.BlockTypeHeading2:
+		b = &notionapi.Heading2Block{}
+	case notionapi.BlockTypeHeading3:
+		b = &notionapi.Heading3Block{}
+	case notionapi.BlockCallout:
+		b = &notionapi.CalloutBlock{}
+	case notionapi.BlockQuote:
+		b = &notionapi.QuoteBlock{}
+	case notionapi.BlockTypeBulletedListItem:
+		b = &notionapi.BulletedListItemBlock{}
+	case notionapi.BlockTypeNumberedListItem:
+		b = &notionapi.NumberedListItemBlock{}
+	case notionapi.BlockTypeToDo:
+		b = &notionapi.ToDoBlock{}
+	case notionapi.BlockTypeCode:
+		b = &notionapi.CodeBlock{}
+	case notionapi.BlockTypeToggle:
+		b = &notionapi.ToggleBlock{}
+	case notionapi.BlockTypeChildPage:
+		b = &notionapi.ChildPageBlock{}
+	case notionapi.BlockTypeEmbed:
+		b = &notionapi.EmbedBlock{}
+	case notionapi.BlockTypeImage:
+		b = &notionapi.ImageBlock{}
+	case notionapi.BlockTypeVideo:
+		b = &notionapi.VideoBlock{}
+	case notionapi.BlockTypeFile:
+		b = &notionapi.FileBlock{}
+	case notionapi.BlockTypePdf:
+		b = &notionapi.PdfBlock{}
+	case notionapi.BlockTypeBookmark:
+		b = &notionapi.BookmarkBlock{}
+	case notionapi.BlockTypeChildDatabase:
+		b = &notionapi.ChildDatabaseBlock{}
+	case notionapi.BlockTypeTableOfContents:
+		b = &notionapi.TableOfContentsBlock{}
+	case notionapi.BlockTypeDivider:
+		b = &notionapi.DividerBlock{}
+	case notionapi.BlockTypeEquation:
+		b = &notionapi.EquationBlock{}
+	case notionapi.BlockTypeBreadcrumb:
+		b = &notionapi.BreadcrumbBlock{}
+	case notionapi.BlockTypeColumn:
+		b = &notionapi.ColumnBlock{}
+	case notionapi.BlockTypeColumnList:
+		b = &notionapi.ColumnListBlock{}
+	case notionapi.BlockTypeLinkPreview:
+		b = &notionapi.LinkPreviewBlock{}
+	case notionapi.BlockTypeLinkToPage:
+		b = &notionapi.LinkToPageBlock{}
+	case notionapi.BlockTypeTemplate:
+		b = &notionapi.TemplateBlock{}
+	case notionapi.BlockTypeSyncedBlock:
+		b = &notionapi.SyncedBlock{}
+	case notionapi.BlockTypeTableBlock:
+		b = &notionapi.TableBlock{}
+	case notionapi.BlockTypeTableRowBlock:
+		b = &notionapi.TableRowBlock{}
+
+	case notionapi.BlockTypeUnsupported:
+		b = &notionapi.UnsupportedBlock{}
+	default:
+		return &notionapi.UnsupportedBlock{}, nil
+	}
+	j, err := json.Marshal(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(j, b)
+	return b, err
+}
+
+func (srv *MockedBlockService) GetChildren(ctx context.Context, id notionapi.BlockID, pagination *notionapi.Pagination) (*notionapi.GetChildrenResponse, error) {
+	return srv.childBlocks, srv.err
+}
+
+func (srv *MockedBlockService) AppendChildren(ctx context.Context, id notionapi.BlockID, req *notionapi.AppendBlockChildrenRequest) (*notionapi.AppendBlockChildrenResponse, error) {
+	// TODO
+	return nil, nil
+}
+
+func (srv *MockedBlockService) Get(ctx context.Context, id notionapi.BlockID) (notionapi.Block, error) {
+	return srv.block, srv.err
+}
+
+func (srv *MockedBlockService) Delete(ctx context.Context, id notionapi.BlockID) (notionapi.Block, error) {
+	// TODO
+	return nil, nil
+}
+
+func (srv *MockedBlockService) Update(ctx context.Context, id notionapi.BlockID, request *notionapi.BlockUpdateRequest) (notionapi.Block, error) {
+	// TODO
+	return nil, nil
+}
+
+func TestGetBlocksOfPagesAndChildBlocksOfBlock(t *testing.T) {
+	tests := []struct {
+		name                string
+		blockID             notionapi.BlockID
+		childBlocksFilePath string
+		blockFilePath       string
+		wantErr             bool
+		emptyResult         bool
+		err                 error
+	}{
+		{
+			name:                "Get child block for Page",
+			blockID:             notionapi.BlockID("e50c7b3ae61c4b26a6f96dfef9f74148"),
+			childBlocksFilePath: PAGE_BLOCKS_JSON,
+			blockFilePath:       BLOCKS_JSON,
+			wantErr:             false,
+			emptyResult:         false,
+			err:                 nil,
+		},
+		{
+			name:                "Get no blocks for Page",
+			blockID:             notionapi.BlockID("e50c7b3ae61c4b26a6f96dfef9f74148"),
+			childBlocksFilePath: EMPTY_SEARCH_RESULT,
+			blockFilePath:       BLOCKS_JSON,
+			wantErr:             true,
+			emptyResult:         true,
+			err:                 errors.New(EMPTY_SEARCH_RESULT),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := GetMockedBlockService(t, test.childBlocksFilePath, test.blockFilePath, test.err)
+			childBlocks, _, err := client.GetBlocksOfPages(context.Background(), notionclient.PageID(test.blockID), notionapi.Cursor(""))
+			childBlocks2, _, err2 := client.GetChildBlocksOfBlock(context.Background(), notionclient.BlockID(test.blockID), notionapi.Cursor(""))
+			if test.wantErr {
+				assert.Nil(t, childBlocks)
+				assert.NotNil(t, err)
+				assert.Nil(t, childBlocks2)
+				assert.NotNil(t, err2)
+			} else {
+				if test.emptyResult {
+					assert.Empty(t, childBlocks)
+					assert.Empty(t, childBlocks2)
+				} else {
+					assert.NotEmpty(t, childBlocks)
+					assert.NotEmpty(t, childBlocks2)
+				}
+				assert.Nil(t, err)
+				assert.Nil(t, err2)
+			}
+		})
+	}
+}
+
+func TestGetBlockByID(t *testing.T) {
+	tests := []struct {
+		name                string
+		blockID             notionapi.BlockID
+		childBlocksFilePath string
+		blockFilePath       string
+		wantErr             bool
+		err                 error
+	}{
+		{
+			name:                "Get existing block",
+			blockID:             notionapi.BlockID("c38690eb-049b-4e52-b562-2b774f8d3b73"),
+			childBlocksFilePath: PAGE_BLOCKS_JSON,
+			blockFilePath:       BLOCKS_JSON,
+			wantErr:             false,
+			err:                 nil,
+		},
+		{
+			name:                "Get non-existing block",
+			blockID:             notionapi.BlockID("e50c7b3ae61c4b26a6f96dfef9f74156"),
+			childBlocksFilePath: EMPTY_SEARCH_RESULT,
+			blockFilePath:       BLOCKS_JSON,
+			wantErr:             true,
+			err:                 errors.New(EMPTY_SEARCH_RESULT),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := GetMockedBlockService(t, test.childBlocksFilePath, test.blockFilePath, test.err)
+			block, err := client.GetBlockByID(context.Background(), notionclient.BlockID(test.blockID))
+
+			if test.wantErr {
+				assert.Nil(t, block)
+				assert.NotNil(t, err)
+			} else {
+				assert.NotNil(t, block)
+				assert.Nil(t, err)
+			}
+		})
 	}
 }

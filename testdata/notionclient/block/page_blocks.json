@@ -1,0 +1,800 @@
+{
+  "object": "list",
+  "results": [
+      {
+          "object": "block",
+          "id": "c38690eb-049b-4e52-b562-2b774f8d3b73",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "callout",
+          "callout": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "This template documents how to review code. Helpful for new and remote employees to get and stay aligned.",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "This template documents how to review code. Helpful for new and remote employees to get and stay aligned.",
+                      "href": null
+                  }
+              ],
+              "icon": {
+                  "type": "emoji",
+                  "emoji": "💡"
+              },
+              "color": "gray_background"
+          }
+      },
+      {
+          "object": "block",
+          "id": "2f06bc05-d58a-4eaf-b0bb-ac071128caf9",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "table_of_contents",
+          "table_of_contents": {
+              "color": "gray"
+          }
+      },
+      {
+          "object": "block",
+          "id": "6b2d1dac-1bfc-43cb-b2f2-b015d34b5fb1",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_1",
+          "heading_1": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Philosophy",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Philosophy",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "27b9892f-8fdc-464f-947a-4f8214d7df61",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Why do you perform code reviews? What are your guiding principles for these reviews?",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Why do you perform code reviews? What are your guiding principles for these reviews?",
+                      "href": null
+                  }
+              ],
+              "color": "gray"
+          }
+      },
+      {
+          "object": "block",
+          "id": "37b99c7c-ed58-411b-bf24-be44480d8604",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "You may want to mention other pages here. Like Engineering Guidelines. To link to another page inline, type ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "You may want to mention other pages here. Like Engineering Guidelines. To link to another page inline, type ",
+                      "href": null
+                  },
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "@",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": true,
+                          "color": "default"
+                      },
+                      "plain_text": "@",
+                      "href": null
+                  },
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": " followed by the name of the page: ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": " followed by the name of the page: ",
+                      "href": null
+                  },
+                  {
+                      "type": "mention",
+                      "mention": {
+                          "type": "page",
+                          "page": {
+                              "id": "f50deba3-df68-4670-858a-c632ebc2dd02"
+                          }
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Engineering Guidelines",
+                      "href": "https://www.notion.so/f50deba3df684670858ac632ebc2dd02"
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "5f4cedca-0e1e-49ba-814e-1a4c2615cc77",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_1",
+          "heading_1": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Preparing Code for Review",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Preparing Code for Review",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "00e686fa-2b77-4768-8987-fac4734cd868",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Preparation sets your reviewers up for success.",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Preparation sets your reviewers up for success.",
+                      "href": null
+                  }
+              ],
+              "color": "gray"
+          }
+      },
+      {
+          "object": "block",
+          "id": "71c7c012-d6d1-4dc3-81b8-57a01a2a4791",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_3",
+          "heading_3": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Commit Messages",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Commit Messages",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "20d81cb1-1818-46b5-bbcb-583c1ae5b3d1",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Make sure your commit messages are descriptive. ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Make sure your commit messages are descriptive. ",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "c33cac61-7e0f-4aeb-8caf-7a379320631d",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_3",
+          "heading_3": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Github PR Descriptions",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Github PR Descriptions",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "376512e3-4490-4aa3-ba1e-58a5215dbe9b",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Your PR descriptions should be an extension of your commit messages. Write about both what the commit changes, and how you implemented the change. ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Your PR descriptions should be an extension of your commit messages. Write about both what the commit changes, and how you implemented the change. ",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "4af60829-1903-486c-831c-c72119a42075",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_1",
+          "heading_1": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Performing Code Reviews",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Performing Code Reviews",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "a7929341-096a-4395-b9af-a3d9033a5393",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_3",
+          "heading_3": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "How to Review",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "How to Review",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "979871ae-c971-4629-abcf-12bad466cf31",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": true,
+          "archived": false,
+          "type": "bulleted_list_item",
+          "bulleted_list_item": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Make two passes over the PR if it's substantial. ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Make two passes over the PR if it's substantial. ",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "01956515-8dc9-40e8-9238-002b4c4008cb",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "heading_1",
+          "heading_1": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "Examples",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "Examples",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "bff4d183-b67e-459a-b682-845a6e6d1c27",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "code",
+          "code": {
+              "caption": [],
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "var commentCount = 0;",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "var commentCount = 0;",
+                      "href": null
+                  }
+              ],
+              "language": "javascript"
+          }
+      },
+      {
+          "object": "block",
+          "id": "9476699c-3974-4b93-bf1d-8761b20a3005",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "You might suggest that this be a ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": "You might suggest that this be a ",
+                      "href": null
+                  },
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "let",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": true,
+                          "color": "default"
+                      },
+                      "plain_text": "let",
+                      "href": null
+                  },
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": " instead of ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": " instead of ",
+                      "href": null
+                  },
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": "var",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": true,
+                          "color": "default"
+                      },
+                      "plain_text": "var",
+                      "href": null
+                  },
+                  {
+                      "type": "text",
+                      "text": {
+                          "content": ". ",
+                          "link": null
+                      },
+                      "annotations": {
+                          "bold": false,
+                          "italic": false,
+                          "strikethrough": false,
+                          "underline": false,
+                          "code": false,
+                          "color": "default"
+                      },
+                      "plain_text": ". ",
+                      "href": null
+                  }
+              ],
+              "color": "default"
+          }
+      },
+      {
+          "object": "block",
+          "id": "7ac5bdfb-52f3-46a2-9c03-bdeb35617568",
+          "created_time": "2021-06-28T10:16:00.000Z",
+          "last_edited_time": "2021-06-28T10:16:00.000Z",
+          "created_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "last_edited_by": {
+              "object": "user",
+              "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+          },
+          "has_children": false,
+          "archived": false,
+          "type": "paragraph",
+          "paragraph": {
+              "rich_text": [],
+              "color": "default"
+          }
+      }
+  ],
+  "next_cursor": "123456",
+  "has_more": true,
+  "type": "block",
+  "block": {}
+}
