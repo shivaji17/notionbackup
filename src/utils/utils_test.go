@@ -152,13 +152,13 @@ func TestParseSearchResponseJsonString(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			data, err := utils.ReadContentsOfFile(test.filePath)
 			assert.Nil(t, err)
-			database, err := utils.ParseDatabaseJsonString(data)
+			resp, err := utils.ParseSearchResponseJsonString(data)
 
 			if test.wantErr {
-				assert.Nil(t, database)
+				assert.Nil(t, resp)
 				assert.NotNil(t, err)
 			} else {
-				assert.NotNil(t, database)
+				assert.NotNil(t, resp)
 				assert.Nil(t, err)
 			}
 		})
