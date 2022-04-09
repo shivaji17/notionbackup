@@ -8,7 +8,7 @@ import (
 	"github.com/jomei/notionapi"
 )
 
-func ReadJsonFile(filePath string) ([]byte, error) {
+func ReadContentsOfFile(filePath string) ([]byte, error) {
 	jsonFile, err := os.Open(filePath)
 
 	if err != nil {

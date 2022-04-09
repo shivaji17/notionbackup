@@ -38,10 +38,12 @@ type Filter struct {
 }
 
 type NotionClient interface {
-	GetAllPages(context.Context) ([]notionapi.Page, error)
-	GetAllDatabases(context.Context) ([]notionapi.Database, error)
-	GetPagesByName(context.Context, PageName) ([]notionapi.Page, error)
-	GetDatabasesByName(context.Context, DatabaseName) ([]notionapi.Database, error)
+	GetAllPages(context.Context, notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error)
+	GetAllDatabases(context.Context, notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error)
+	GetPagesByName(context.Context, PageName, notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error)
+	GetDatabasesByName(context.Context, DatabaseName, notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error)
+	GetPageByID(context.Context, PageID) (*notionapi.Page, error)
+	GetDatabaseByID(context.Context, DatabaseID) (*notionapi.Database, error)
 }
 
 type NotionApiClient struct {
@@ -73,72 +75,75 @@ func (c *NotionApiClient) search(ctx context.Context, objectType ObjectType, cur
 }
 
 // Helper function to get all pages matching the given page name
-func (c *NotionApiClient) getPages(ctx context.Context, name PageName) ([]notionapi.Page, error) {
+func (c *NotionApiClient) getPages(ctx context.Context, name PageName, cursor notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
 	pages := []notionapi.Page{}
-	cursor := notionapi.Cursor("")
-	for {
-		resp, err := c.search(ctx, PAGE, cursor, string(name))
-		if err != nil {
-			return nil, err
-		}
 
-		for _, result := range resp.Results {
-			page := result.(*notionapi.Page)
-			pages = append(pages, *page)
-		}
-
-		if resp.HasMore {
-			cursor = resp.NextCursor
-		} else {
-			break
-		}
+	resp, err := c.search(ctx, PAGE, cursor, string(name))
+	if err != nil {
+		return nil, "", err
 	}
-	return pages, nil
+
+	for _, result := range resp.Results {
+		page := result.(*notionapi.Page)
+		pages = append(pages, *page)
+	}
+
+	var newCursor notionapi.Cursor
+	if resp.HasMore {
+		newCursor = resp.NextCursor
+	}
+
+	return pages, newCursor, nil
 }
 
 // Get all pages. Passing empty name would mean fetching all the pages from
 // workspace
-func (c *NotionApiClient) GetAllPages(ctx context.Context) ([]notionapi.Page, error) {
-	return c.getPages(ctx, "")
+func (c *NotionApiClient) GetAllPages(ctx context.Context, cursor notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
+	return c.getPages(ctx /*PageName*/, "", cursor)
 }
 
 // Get all pages matching the given page name
-func (c *NotionApiClient) GetPagesByName(ctx context.Context, name PageName) ([]notionapi.Page, error) {
-	return c.getPages(ctx, name)
+func (c *NotionApiClient) GetPagesByName(ctx context.Context, name PageName, cursor notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
+	return c.getPages(ctx, name, cursor)
 }
 
 // Helper function to get all databases matching the given database name
-func (c *NotionApiClient) getDatabases(ctx context.Context, name DatabaseName) ([]notionapi.Database, error) {
+func (c *NotionApiClient) getDatabases(ctx context.Context, name DatabaseName, cursor notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
 	databases := []notionapi.Database{}
-	cursor := notionapi.Cursor("")
-	for {
-		resp, err := c.search(ctx, PAGE, cursor, string(name))
-		if err != nil {
-			return nil, err
-		}
 
-		for _, result := range resp.Results {
-			database := result.(*notionapi.Database)
-			databases = append(databases, *database)
-		}
-
-		if resp.HasMore {
-			cursor = resp.NextCursor
-		} else {
-			break
-		}
-
+	resp, err := c.search(ctx, PAGE, cursor, string(name))
+	if err != nil {
+		return nil, "", err
 	}
-	return databases, nil
+
+	for _, result := range resp.Results {
+		database := result.(*notionapi.Database)
+		databases = append(databases, *database)
+	}
+
+	var newCursor notionapi.Cursor
+	if resp.HasMore {
+		newCursor = resp.NextCursor
+	}
+
+	return databases, newCursor, nil
 }
 
 // Get all databases. Passing empty name would mean fetching all the databases from
 // workspace
-func (c *NotionApiClient) GetAllDatabases(ctx context.Context) ([]notionapi.Database, error) {
-	return c.getDatabases(ctx, "")
+func (c *NotionApiClient) GetAllDatabases(ctx context.Context, cursor notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
+	return c.getDatabases(ctx /*DatabaseName*/, "", cursor)
 }
 
 // Get all databases matching the given page name
-func (c *NotionApiClient) GetDatabasesByName(ctx context.Context, name DatabaseName) ([]notionapi.Database, error) {
-	return c.getDatabases(ctx, name)
+func (c *NotionApiClient) GetDatabasesByName(ctx context.Context, name DatabaseName, cursor notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
+	return c.getDatabases(ctx, name, cursor)
+}
+
+func (c *NotionApiClient) GetPageByID(ctx context.Context, id PageID) (*notionapi.Page, error) {
+	return c.Client.Page.Get(ctx, notionapi.PageID(id))
+}
+
+func (c *NotionApiClient) GetDatabaseByID(ctx context.Context, id DatabaseID) (*notionapi.Database, error) {
+	return c.Client.Database.Get(ctx, notionapi.DatabaseID(id))
 }
