@@ -2,26 +2,11 @@ package utils
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/jomei/notionapi"
 )
-
-func ReadContentsOfFile(filePath string) ([]byte, error) {
-	jsonFile, err := os.Open(filePath)
-
-	if err != nil {
-		return nil, err
-	}
-	defer jsonFile.Close()
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return nil, err
-	}
-	return byteValue, nil
-}
 
 func ParsePageJsonString(jsonBytes []byte) (*notionapi.Page, error) {
 	page := &notionapi.Page{}
@@ -48,4 +33,21 @@ func ParseDatabaseJsonString(jsonBytes []byte) (*notionapi.Database, error) {
 		return nil, err
 	}
 	return database, nil
+}
+
+func CheckIfDirExists(dirPath string) error {
+	_, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+
+func CreateDirectory(dirPath string) error {
+	absPath, err := filepath.Abs(dirPath)
+	if err != nil {
+		return err
+	}
+
+	return os.MkdirAll(absPath, 0700)
 }

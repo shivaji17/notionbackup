@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
@@ -15,6 +16,10 @@ const (
 	DATABASE_JSON        = TESTDATAPATH + "notionclient/database/database.json"
 	SEARCH_RESPONSE_JSON = TESTDATAPATH + "notionclient/search/search_all_databases.json"
 	INVALID_JSON         = TESTDATAPATH + "invalid_json.json"
+	EXISTING_DIR         = TESTDATAPATH
+	NON_EXISTING_DIR     = TESTDATAPATH + "xyz"
+	VALID_DIR_PATH       = TESTDATAPATH + "create_dir_test"
+	INVALID_DIR_PATH     = "/xyz/sd/^7$%"
 )
 
 func TestReadContentsOfFile(t *testing.T) {
@@ -47,10 +52,10 @@ func TestReadContentsOfFile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			fileData, err := utils.ReadContentsOfFile(test.filePath)
+			fileData, err := ioutil.ReadFile(test.filePath)
 
 			if test.wantErr {
-				assert.Nil(t, fileData)
+				assert.Empty(t, fileData)
 				assert.NotNil(t, err)
 			} else {
 				assert.Equal(t, test.contents, string(fileData))
@@ -80,7 +85,7 @@ func TestParsePageJsonString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			data, err := utils.ReadContentsOfFile(test.filePath)
+			data, err := ioutil.ReadFile(test.filePath)
 			assert.Nil(t, err)
 			page, err := utils.ParsePageJsonString(data)
 
@@ -115,7 +120,7 @@ func TestParseDatabaseJsonString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			data, err := utils.ReadContentsOfFile(test.filePath)
+			data, err := ioutil.ReadFile(test.filePath)
 			assert.Nil(t, err)
 			database, err := utils.ParseDatabaseJsonString(data)
 
@@ -150,7 +155,7 @@ func TestParseSearchResponseJsonString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			data, err := utils.ReadContentsOfFile(test.filePath)
+			data, err := ioutil.ReadFile(test.filePath)
 			assert.Nil(t, err)
 			resp, err := utils.ParseSearchResponseJsonString(data)
 
@@ -159,6 +164,66 @@ func TestParseSearchResponseJsonString(t *testing.T) {
 				assert.NotNil(t, err)
 			} else {
 				assert.NotNil(t, resp)
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestCheckIfDirExists(t *testing.T) {
+	tests := []struct {
+		name    string
+		dirPath string
+		wantErr bool
+	}{
+		{
+			name:    "Existing directory",
+			dirPath: EXISTING_DIR,
+			wantErr: false,
+		},
+		{
+			name:    "Non existing directory",
+			dirPath: NON_EXISTING_DIR,
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := utils.CheckIfDirExists(test.dirPath)
+			if test.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestCreateDirectory(t *testing.T) {
+	tests := []struct {
+		name    string
+		dirPath string
+		wantErr bool
+	}{
+		{
+			name:    "Valid dir path",
+			dirPath: VALID_DIR_PATH,
+			wantErr: false,
+		},
+		{
+			name:    "Invalid dir path",
+			dirPath: INVALID_DIR_PATH,
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := utils.CreateDirectory(test.dirPath)
+			if test.wantErr {
+				assert.NotNil(t, err)
+			} else {
 				assert.Nil(t, err)
 			}
 		})

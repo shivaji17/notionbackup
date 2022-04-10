@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"testing"
 
 	"github.com/jomei/notionapi"
@@ -70,7 +71,7 @@ func GetMockedSearchService(t *testing.T, mockFilePath string, err error) *notio
 		}
 	}
 
-	jsonBytes, err := utils.ReadContentsOfFile(mockFilePath)
+	jsonBytes, err := ioutil.ReadFile(mockFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -358,7 +359,7 @@ func GetMockedPageService(t *testing.T, mockFilePath string, err error) *notionc
 		}
 	}
 
-	jsonBytes, err := utils.ReadContentsOfFile(mockFilePath)
+	jsonBytes, err := ioutil.ReadFile(mockFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -460,7 +461,7 @@ func GetMockedDatabaseService(t *testing.T, databaseFilePath string, databaseQue
 		}
 	}
 
-	jsonBytes, err := utils.ReadContentsOfFile(databaseFilePath)
+	jsonBytes, err := ioutil.ReadFile(databaseFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -471,7 +472,7 @@ func GetMockedDatabaseService(t *testing.T, databaseFilePath string, databaseQue
 		t.Fatal(err)
 	}
 
-	jsonBytes2, err := utils.ReadContentsOfFile(databaseQueryResponseFile)
+	jsonBytes2, err := ioutil.ReadFile(databaseQueryResponseFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -646,7 +647,7 @@ func GetMockedBlockService(t *testing.T, childBlocksFilePath string, blockFilePa
 		}
 	}
 
-	jsonBytes, err := utils.ReadContentsOfFile(childBlocksFilePath)
+	jsonBytes, err := ioutil.ReadFile(childBlocksFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -657,7 +658,7 @@ func GetMockedBlockService(t *testing.T, childBlocksFilePath string, blockFilePa
 		t.Fatal(err)
 	}
 
-	jsonBytes2, err := utils.ReadContentsOfFile(blockFilePath)
+	jsonBytes2, err := ioutil.ReadFile(blockFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
