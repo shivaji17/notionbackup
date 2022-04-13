@@ -1,9 +1,11 @@
 package utils_test
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"testing"
 
+	"github.com/jomei/notionapi"
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,6 +16,7 @@ const (
 	INVALID_FILEPATH     = TESTDATAPATH + "notionclient/search"
 	PAGE_JSON            = TESTDATAPATH + "notionclient/page/page.json"
 	DATABASE_JSON        = TESTDATAPATH + "notionclient/database/database.json"
+	PAGE_BLOCKS_JSON     = TESTDATAPATH + "notionclient/block/page_blocks.json"
 	SEARCH_RESPONSE_JSON = TESTDATAPATH + "notionclient/search/search_all_databases.json"
 	INVALID_JSON         = TESTDATAPATH + "invalid_json.json"
 	EXISTING_DIR         = TESTDATAPATH
@@ -226,6 +229,38 @@ func TestCreateDirectory(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 			}
+		})
+	}
+}
+
+func TestDecodeBlockObject(t *testing.T) {
+
+	jsonBytes, err := ioutil.ReadFile(PAGE_BLOCKS_JSON)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	childBlocks := &notionapi.GetChildrenResponse{}
+	err = json.Unmarshal(jsonBytes, &childBlocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, block := range childBlocks.Results {
+		t.Run("Testing block type: "+string(block.GetType()), func(t *testing.T) {
+			bytes, err := json.Marshal(block)
+			assert.Nil(t, err)
+			assert.NotEmpty(t, bytes)
+
+			var response map[string]interface{}
+			err = json.Unmarshal(bytes, &response)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			block, err := utils.DecodeBlockObject(response)
+			assert.Nil(t, err)
+			assert.NotNil(t, block)
 		})
 	}
 }

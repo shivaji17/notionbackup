@@ -1,14 +1,18 @@
 package rw
 
-import "github.com/jomei/notionapi"
+import (
+	"context"
+
+	"github.com/jomei/notionapi"
+)
 
 type DataIdentifier string
 
 type ReaderWriter interface {
-	WriteDatabase(*notionapi.Database) (DataIdentifier, error)
-	ReadDatabase(DataIdentifier) (*notionapi.Database, error)
-	WritePage(*notionapi.Page) (DataIdentifier, error)
-	ReadPage(DataIdentifier) (*notionapi.Page, error)
-	WriteBlock(notionapi.Block) (DataIdentifier, error)
-	ReadBlock(DataIdentifier) (notionapi.Block, error)
+	WriteDatabase(context.Context, *notionapi.Database) (DataIdentifier, error)
+	ReadDatabase(context.Context, DataIdentifier) (*notionapi.Database, error)
+	WritePage(context.Context, *notionapi.Page) (DataIdentifier, error)
+	ReadPage(context.Context, DataIdentifier) (*notionapi.Page, error)
+	WriteBlock(context.Context, notionapi.Block) (DataIdentifier, error)
+	ReadBlock(context.Context, DataIdentifier) (notionapi.Block, error)
 }
