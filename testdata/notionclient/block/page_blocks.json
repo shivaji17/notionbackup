@@ -945,6 +945,26 @@
             "equation": {
                 "expression": "\\lim_{a \\rightarrow b} "
             }
+        },
+        {
+            "object": "block",
+            "id": "590afd29-7ebe-4a8a-b90a-c633fc3757be",
+            "created_time": "2022-04-13T14:37:00.000Z",
+            "last_edited_time": "2022-04-13T14:37:00.000Z",
+            "created_by": {
+                "object": "user",
+                "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+            },
+            "last_edited_by": {
+                "object": "user",
+                "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+            },
+            "has_children": false,
+            "archived": false,
+            "type": "table_of_contents",
+            "table_of_contents": {
+                "color": "gray"
+            }
         }
     ],
     "next_cursor": null,

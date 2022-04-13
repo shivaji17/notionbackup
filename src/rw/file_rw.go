@@ -66,10 +66,14 @@ func GetFileReaderWriter(basePath string, createDirIfNotExist bool) (ReaderWrite
 	}, nil
 }
 
-func (rw *FileReaderWriter) writeData(ctx context.Context, dataBytes []byte, dirPath string) (DataIdentifier, error) {
+func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{}, dirPath string) (DataIdentifier, error) {
 	dataIdentifier := filepath.Join(dirPath, uuid.New().String())
-	err := os.WriteFile(dataIdentifier, dataBytes, FILE_PERM)
+	dataBytes, err := json.Marshal(&v)
+	if err != nil {
+		return "", err
+	}
 
+	err = os.WriteFile(dataIdentifier, dataBytes, FILE_PERM)
 	if err != nil {
 		return "", err
 	}
@@ -96,11 +100,7 @@ func (rw *FileReaderWriter) WriteDatabase(ctx context.Context, database *notiona
 		return "", errors.New("nullptr received for database object")
 	}
 
-	dataBytes, err := json.Marshal(&database)
-	if err != nil {
-		return "", err
-	}
-	return rw.writeData(ctx, dataBytes, rw.databaseDirPath)
+	return rw.writeData(ctx, database, rw.databaseDirPath)
 }
 
 func (rw *FileReaderWriter) ReadDatabase(ctx context.Context, identifier DataIdentifier) (*notionapi.Database, error) {
@@ -117,11 +117,7 @@ func (rw *FileReaderWriter) WritePage(ctx context.Context, page *notionapi.Page)
 		return "", errors.New("nullptr received for page object")
 	}
 
-	dataBytes, err := json.Marshal(&page)
-	if err != nil {
-		return "", err
-	}
-	return rw.writeData(ctx, dataBytes, rw.pageDirPath)
+	return rw.writeData(ctx, page, rw.pageDirPath)
 }
 
 func (rw *FileReaderWriter) ReadPage(ctx context.Context, identifier DataIdentifier) (*notionapi.Page, error) {
@@ -138,11 +134,7 @@ func (rw *FileReaderWriter) WriteBlock(ctx context.Context, block notionapi.Bloc
 		return "", errors.New("nullptr received for block object")
 	}
 
-	dataBytes, err := json.Marshal(&block)
-	if err != nil {
-		return "", err
-	}
-	return rw.writeData(ctx, dataBytes, rw.blockDirPath)
+	return rw.writeData(ctx, block, rw.blockDirPath)
 }
 
 func (rw *FileReaderWriter) ReadBlock(ctx context.Context, identifier DataIdentifier) (notionapi.Block, error) {

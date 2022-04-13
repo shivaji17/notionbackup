@@ -34,9 +34,10 @@ const (
 	DATABASE_QUERY_RESPONSE_JSON = DATABASE_PATH + "database_query_response.json"
 	DATABASE_NOT_EXIST_ERROR_STR = "Database does not exist"
 
-	BLOCK_PATH       = TEST_DATA_PATH + "block/"
-	PAGE_BLOCKS_JSON = BLOCK_PATH + "page_blocks.json"
-	BLOCKS_JSON      = BLOCK_PATH + "block.json"
+	BLOCK_PATH                  = TEST_DATA_PATH + "block/"
+	PAGE_BLOCKS_JSON            = BLOCK_PATH + "page_blocks.json"
+	BLOCKS_WITH_PAGINATION_JSON = BLOCK_PATH + "blocks_with_pagination.json"
+	BLOCKS_JSON                 = BLOCK_PATH + "block.json"
 )
 
 // Mocking the NewClient from github.com/jomei/notionapi
@@ -721,6 +722,15 @@ func TestGetBlocksOfPagesAndChildBlocksOfBlock(t *testing.T) {
 			name:                "Get child block for Page",
 			blockID:             notionapi.BlockID("e50c7b3ae61c4b26a6f96dfef9f74148"),
 			childBlocksFilePath: PAGE_BLOCKS_JSON,
+			blockFilePath:       BLOCKS_JSON,
+			wantErr:             false,
+			emptyResult:         false,
+			err:                 nil,
+		},
+		{
+			name:                "Get child blocks with pagination",
+			blockID:             notionapi.BlockID("e50c7b3ae61c4b26a6f96dfef9f74148"),
+			childBlocksFilePath: BLOCKS_WITH_PAGINATION_JSON,
 			blockFilePath:       BLOCKS_JSON,
 			wantErr:             false,
 			emptyResult:         false,
