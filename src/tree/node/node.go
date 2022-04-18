@@ -23,11 +23,15 @@ const (
 type Node struct {
 	id         NodeID
 	nodeType   NodeType
-	sibling    *Node
-	child      *Node
 	identifier rw.DataIdentifier
+
+	// Using N-ary tree implementation
+	// https://www.interviewbit.com/blog/n-ary-tree/
+	sibling *Node
+	child   *Node
 }
 
+// Helper function to create node with given NodeType
 func createNode(id NodeID, nodeType NodeType, identifier rw.DataIdentifier) (*Node, error) {
 	return &Node{
 		id:         id,
@@ -38,6 +42,7 @@ func createNode(id NodeID, nodeType NodeType, identifier rw.DataIdentifier) (*No
 	}, nil
 }
 
+// Create database node
 func CreateDatabaseNode(ctx context.Context, database *notionapi.Database, rw rw.ReaderWriter) (*Node, error) {
 	identifier, err := rw.WriteDatabase(ctx, database)
 	if err != nil {
@@ -47,6 +52,7 @@ func CreateDatabaseNode(ctx context.Context, database *notionapi.Database, rw rw
 	return createNode(NodeID(uuid.New().String()), DATABASE, identifier)
 }
 
+// Create page node
 func CreatePageNode(ctx context.Context, page *notionapi.Page, rw rw.ReaderWriter) (*Node, error) {
 	identifier, err := rw.WritePage(ctx, page)
 	if err != nil {
@@ -56,6 +62,7 @@ func CreatePageNode(ctx context.Context, page *notionapi.Page, rw rw.ReaderWrite
 	return createNode(NodeID(uuid.New().String()), PAGE, identifier)
 }
 
+// Create block node
 func CreateBlockNode(ctx context.Context, block notionapi.Block, rw rw.ReaderWriter) (*Node, error) {
 	identifier, err := rw.WriteBlock(ctx, block)
 	if err != nil {
@@ -65,6 +72,8 @@ func CreateBlockNode(ctx context.Context, block notionapi.Block, rw rw.ReaderWri
 	return createNode(NodeID(uuid.New().String()), BLOCK, identifier)
 }
 
+// Special node which will act as a root node for a tree with uuid as
+// 00000000-0000-0000-0000-000000000000
 func CreateRootNode() *Node {
 	return &Node{
 		id:         NodeID(uuid.Nil.String()),
@@ -75,6 +84,7 @@ func CreateRootNode() *Node {
 	}
 }
 
+// Various getter function for getting various properties of Node object
 func (nodeObj *Node) GetID() NodeID {
 	return nodeObj.id
 }
@@ -91,6 +101,33 @@ func (nodeObj *Node) HasChildNode() bool {
 	return nodeObj.child != nil
 }
 
+func (nodeObj *Node) HasSibling() bool {
+	return nodeObj.sibling != nil
+}
+
 func (nodeObj *Node) GetChildNode() *Node {
 	return nodeObj.child
+}
+
+func (nodeObj *Node) GetSiblingNode() *Node {
+	return nodeObj.sibling
+}
+
+// Adding a child to current node
+func (nodeObj *Node) AddChild(childNode *Node) {
+	if nodeObj.child == nil {
+		nodeObj.child = childNode
+	} else {
+		tempNode := nodeObj.child
+
+		for {
+			if tempNode.sibling != nil {
+				tempNode = tempNode.sibling
+			} else {
+				break
+			}
+		}
+
+		tempNode.sibling = childNode
+	}
 }

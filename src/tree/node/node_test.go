@@ -3,6 +3,7 @@ package node_test
 import (
 	"context"
 	"errors"
+	"math/rand"
 	"testing"
 
 	"github.com/google/uuid"
@@ -92,6 +93,8 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 			pageNode, err2 := node.CreatePageNode(context.Background(), &notionapi.Page{}, mockedRW)
 			blockNode, err3 := node.CreateBlockNode(context.Background(), &notionapi.ParagraphBlock{}, mockedRW)
 
+			mockedRW.AssertExpectations(t)
+
 			if test.wantErr {
 				assert.Nil(databaseNode)
 				assert.Nil(pageNode)
@@ -132,6 +135,53 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 	}
 }
 
-func TestAddChild(t *testing.T) {
+func getRandomNodeObject(t *testing.T) *node.Node {
+	n := rand.Intn(3)
+	mockedRW := &MockedReaderWriter{}
+	mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(uuid.New().String(), nil)
+	mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(uuid.New().String(), nil)
+	mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(uuid.New().String(), nil)
+	if n == 0 {
+		databaseNode, _ := node.CreateDatabaseNode(context.Background(), &notionapi.Database{}, mockedRW)
+		assert.NotNil(t, databaseNode)
+		return databaseNode
+	} else if n == 1 {
+		pageNode, _ := node.CreatePageNode(context.Background(), &notionapi.Page{}, mockedRW)
+		assert.NotNil(t, pageNode)
+		return pageNode
+	}
+	blockNode, _ := node.CreateBlockNode(context.Background(), &notionapi.ParagraphBlock{}, mockedRW)
+	assert.NotNil(t, blockNode)
+	return blockNode
+}
 
+func TestAddChild(t *testing.T) {
+	assert := assert.New(t)
+	parentNode := getRandomNodeObject(t)
+	child1 := getRandomNodeObject(t)
+
+	parentNode.AddChild(child1)
+
+	assert.False(parentNode.HasSibling())
+	assert.True(parentNode.HasChildNode())
+	assert.NotNil(parentNode.GetChildNode())
+	assert.Equal(parentNode.GetChildNode(), child1)
+
+	child2 := getRandomNodeObject(t)
+	parentNode.AddChild(child2)
+
+	assert.True(child1.HasSibling())
+	assert.Equal(child1.GetSiblingNode(), child2)
+
+	child3 := getRandomNodeObject(t)
+	parentNode.AddChild(child3)
+
+	n := 1
+	temp := parentNode.GetChildNode()
+	for temp.HasSibling() {
+		n++
+		temp = temp.GetSiblingNode()
+	}
+
+	assert.Equal(3, n)
 }
