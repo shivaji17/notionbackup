@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 )
 
@@ -20,7 +19,7 @@ func GetTreeIterator(nodeObj *node.Node) Iterator {
 	queue := list.New()
 
 	if nodeObj != nil {
-		if nodeObj.GetID() == node.NodeID(uuid.Nil.String()) {
+		if nodeObj.GetNodeType() == node.ROOT {
 			childIter := GetChildIterator(nodeObj)
 			for {
 				childNode, err := childIter.Next()

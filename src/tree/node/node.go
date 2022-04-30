@@ -72,8 +72,8 @@ func CreateBlockNode(ctx context.Context, block notionapi.Block, rw rw.ReaderWri
 	return createNode(NodeID(uuid.New().String()), BLOCK, identifier)
 }
 
-// Special node which will act as a root node for a tree with uuid as
-// 00000000-0000-0000-0000-000000000000
+// Special node which will act as a root node for a tree
+// Root node will always have Nil UUID i.e. 00000000-0000-0000-0000-000000000000
 func CreateRootNode() *Node {
 	return &Node{
 		id:         NodeID(uuid.Nil.String()),
