@@ -175,6 +175,7 @@ func TestAddChild(t *testing.T) {
 
 	child3 := getRandomNodeObject(t)
 	parentNode.AddChild(child3)
+	assert.Equal(child2.GetSiblingNode(), child3)
 
 	n := 1
 	temp := parentNode.GetChildNode()
