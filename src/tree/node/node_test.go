@@ -8,59 +8,22 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/mocks"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type MockedReaderWriter struct {
-	mock.Mock
-}
-
-func (mobj *MockedReaderWriter) WriteDatabase(ctx context.Context, database *notionapi.Database) (rw.DataIdentifier, error) {
-	args := mobj.Called(ctx, database)
-
-	return rw.DataIdentifier(args.String(0)), args.Error(1)
-}
-
-func (mobj *MockedReaderWriter) ReadDatabase(ctx context.Context, identifier rw.DataIdentifier) (*notionapi.Database, error) {
-	// Not needed
-	return nil, nil
-}
-
-func (mobj *MockedReaderWriter) WritePage(ctx context.Context, page *notionapi.Page) (rw.DataIdentifier, error) {
-	args := mobj.Called(ctx, page)
-
-	return rw.DataIdentifier(args.String(0)), args.Error(1)
-}
-
-func (mobj *MockedReaderWriter) ReadPage(ctx context.Context, identifier rw.DataIdentifier) (*notionapi.Page, error) {
-	// Not needed
-	return nil, nil
-}
-
-func (mobj *MockedReaderWriter) WriteBlock(ctx context.Context, block notionapi.Block) (rw.DataIdentifier, error) {
-	args := mobj.Called(ctx, block)
-
-	return rw.DataIdentifier(args.String(0)), args.Error(1)
-}
-
-func (mobj *MockedReaderWriter) ReadBlock(ctx context.Context, identifier rw.DataIdentifier) (notionapi.Block, error) {
-	// Not needed
-	return nil, nil
-}
 
 func TestCreateNodeForAllTypes(t *testing.T) {
 	tests := []struct {
 		name       string
-		identifier string
+		identifier rw.DataIdentifier
 		err        error
 		wantErr    bool
 	}{
 		{
 			name:       "Return valid node",
-			identifier: uuid.NewString(),
+			identifier: rw.DataIdentifier(uuid.NewString()),
 			err:        nil,
 			wantErr:    false,
 		},
@@ -84,13 +47,15 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			mockedRW := &MockedReaderWriter{}
-			mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(test.identifier, test.err)
-			mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(test.identifier, test.err)
-			mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(test.identifier, test.err)
+			mockedRW := mocks.NewReaderWriter(t)
 
+			mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(test.identifier, test.err)
 			databaseNode, err1 := node.CreateDatabaseNode(context.Background(), &notionapi.Database{}, mockedRW)
+
+			mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(test.identifier, test.err)
 			pageNode, err2 := node.CreatePageNode(context.Background(), &notionapi.Page{}, mockedRW)
+
+			mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(test.identifier, test.err)
 			blockNode, err3 := node.CreateBlockNode(context.Background(), &notionapi.ParagraphBlock{}, mockedRW)
 
 			mockedRW.AssertExpectations(t)
@@ -137,20 +102,22 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 
 func getRandomNodeObject(t *testing.T) *node.Node {
 	n := rand.Intn(3)
-	mockedRW := &MockedReaderWriter{}
-	mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(uuid.New().String(), nil)
-	mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(uuid.New().String(), nil)
-	mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(uuid.New().String(), nil)
+	mockedRW := mocks.NewReaderWriter(t)
+
 	if n == 0 {
+		mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(rw.DataIdentifier(uuid.New().String()), nil)
 		databaseNode, _ := node.CreateDatabaseNode(context.Background(), &notionapi.Database{}, mockedRW)
 		assert.NotNil(t, databaseNode)
 		return databaseNode
 	} else if n == 1 {
+		mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(rw.DataIdentifier(uuid.New().String()), nil)
 		pageNode, _ := node.CreatePageNode(context.Background(), &notionapi.Page{}, mockedRW)
 		assert.NotNil(t, pageNode)
 		return pageNode
 	}
+	mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(rw.DataIdentifier(uuid.New().String()), nil)
 	blockNode, _ := node.CreateBlockNode(context.Background(), &notionapi.ParagraphBlock{}, mockedRW)
+
 	assert.NotNil(t, blockNode)
 	return blockNode
 }
