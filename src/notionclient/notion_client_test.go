@@ -611,7 +611,7 @@ func TestGetPagesOfDatabase(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := GetMockedDatabaseService(t, test.databaseFilePath, test.databaseQueryRspFilePath, test.err)
-			pages, _, err := client.GetPagesOfDatabase(context.Background(), notionclient.DatabaseID(test.databaseid), notionapi.Cursor(""))
+			pages, _, err := client.GetDatabasePages(context.Background(), notionclient.DatabaseID(test.databaseid), notionapi.Cursor(""))
 			if test.wantErr {
 				assert.Nil(t, pages)
 				assert.NotNil(t, err)
@@ -750,7 +750,7 @@ func TestGetBlocksOfPagesAndChildBlocksOfBlock(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := GetMockedBlockService(t, test.childBlocksFilePath, test.blockFilePath, test.err)
-			childBlocks, _, err := client.GetBlocksOfPages(context.Background(), notionclient.PageID(test.blockID), notionapi.Cursor(""))
+			childBlocks, _, err := client.GetPageBlocks(context.Background(), notionclient.PageID(test.blockID), notionapi.Cursor(""))
 			childBlocks2, _, err2 := client.GetChildBlocksOfBlock(context.Background(), notionclient.BlockID(test.blockID), notionapi.Cursor(""))
 			if test.wantErr {
 				assert.Nil(t, childBlocks)

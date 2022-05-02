@@ -101,36 +101,6 @@ func (_m *NotionClient) GetBlockByID(_a0 context.Context, _a1 notionclient.Block
 	return r0, r1
 }
 
-// GetBlocksOfPages provides a mock function with given fields: _a0, _a1, _a2
-func (_m *NotionClient) GetBlocksOfPages(_a0 context.Context, _a1 notionclient.PageID, _a2 notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 []notionapi.Block
-	if rf, ok := ret.Get(0).(func(context.Context, notionclient.PageID, notionapi.Cursor) []notionapi.Block); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]notionapi.Block)
-		}
-	}
-
-	var r1 notionapi.Cursor
-	if rf, ok := ret.Get(1).(func(context.Context, notionclient.PageID, notionapi.Cursor) notionapi.Cursor); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Get(1).(notionapi.Cursor)
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, notionclient.PageID, notionapi.Cursor) error); ok {
-		r2 = rf(_a0, _a1, _a2)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
 // GetChildBlocksOfBlock provides a mock function with given fields: _a0, _a1, _a2
 func (_m *NotionClient) GetChildBlocksOfBlock(_a0 context.Context, _a1 notionclient.BlockID, _a2 notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -184,6 +154,36 @@ func (_m *NotionClient) GetDatabaseByID(_a0 context.Context, _a1 notionclient.Da
 	return r0, r1
 }
 
+// GetDatabasePages provides a mock function with given fields: _a0, _a1, _a2
+func (_m *NotionClient) GetDatabasePages(_a0 context.Context, _a1 notionclient.DatabaseID, _a2 notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []notionapi.Page
+	if rf, ok := ret.Get(0).(func(context.Context, notionclient.DatabaseID, notionapi.Cursor) []notionapi.Page); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]notionapi.Page)
+		}
+	}
+
+	var r1 notionapi.Cursor
+	if rf, ok := ret.Get(1).(func(context.Context, notionclient.DatabaseID, notionapi.Cursor) notionapi.Cursor); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Get(1).(notionapi.Cursor)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, notionclient.DatabaseID, notionapi.Cursor) error); ok {
+		r2 = rf(_a0, _a1, _a2)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // GetDatabasesByName provides a mock function with given fields: _a0, _a1, _a2
 func (_m *NotionClient) GetDatabasesByName(_a0 context.Context, _a1 notionclient.DatabaseName, _a2 notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -206,6 +206,36 @@ func (_m *NotionClient) GetDatabasesByName(_a0 context.Context, _a1 notionclient
 
 	var r2 error
 	if rf, ok := ret.Get(2).(func(context.Context, notionclient.DatabaseName, notionapi.Cursor) error); ok {
+		r2 = rf(_a0, _a1, _a2)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// GetPageBlocks provides a mock function with given fields: _a0, _a1, _a2
+func (_m *NotionClient) GetPageBlocks(_a0 context.Context, _a1 notionclient.PageID, _a2 notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []notionapi.Block
+	if rf, ok := ret.Get(0).(func(context.Context, notionclient.PageID, notionapi.Cursor) []notionapi.Block); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]notionapi.Block)
+		}
+	}
+
+	var r1 notionapi.Cursor
+	if rf, ok := ret.Get(1).(func(context.Context, notionclient.PageID, notionapi.Cursor) notionapi.Cursor); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Get(1).(notionapi.Cursor)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, notionclient.PageID, notionapi.Cursor) error); ok {
 		r2 = rf(_a0, _a1, _a2)
 	} else {
 		r2 = ret.Error(2)
@@ -259,36 +289,6 @@ func (_m *NotionClient) GetPagesByName(_a0 context.Context, _a1 notionclient.Pag
 
 	var r2 error
 	if rf, ok := ret.Get(2).(func(context.Context, notionclient.PageName, notionapi.Cursor) error); ok {
-		r2 = rf(_a0, _a1, _a2)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
-// GetPagesOfDatabase provides a mock function with given fields: _a0, _a1, _a2
-func (_m *NotionClient) GetPagesOfDatabase(_a0 context.Context, _a1 notionclient.DatabaseID, _a2 notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 []notionapi.Page
-	if rf, ok := ret.Get(0).(func(context.Context, notionclient.DatabaseID, notionapi.Cursor) []notionapi.Page); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]notionapi.Page)
-		}
-	}
-
-	var r1 notionapi.Cursor
-	if rf, ok := ret.Get(1).(func(context.Context, notionclient.DatabaseID, notionapi.Cursor) notionapi.Cursor); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Get(1).(notionapi.Cursor)
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, notionclient.DatabaseID, notionapi.Cursor) error); ok {
 		r2 = rf(_a0, _a1, _a2)
 	} else {
 		r2 = ret.Error(2)

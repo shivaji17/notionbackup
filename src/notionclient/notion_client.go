@@ -44,8 +44,8 @@ type NotionClient interface {
 	GetDatabasesByName(context.Context, DatabaseName, notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error)
 	GetPageByID(context.Context, PageID) (*notionapi.Page, error)
 	GetDatabaseByID(context.Context, DatabaseID) (*notionapi.Database, error)
-	GetPagesOfDatabase(context.Context, DatabaseID, notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error)
-	GetBlocksOfPages(context.Context, PageID, notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error)
+	GetDatabasePages(context.Context, DatabaseID, notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error)
+	GetPageBlocks(context.Context, PageID, notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error)
 	GetChildBlocksOfBlock(context.Context, BlockID, notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error)
 	GetBlockByID(context.Context, BlockID) (notionapi.Block, error)
 }
@@ -159,7 +159,7 @@ func (c *NotionApiClient) GetDatabaseByID(ctx context.Context, id DatabaseID) (*
 }
 
 // Get all pages for given Database
-func (c *NotionApiClient) GetPagesOfDatabase(ctx context.Context, id DatabaseID, cursor notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
+func (c *NotionApiClient) GetDatabasePages(ctx context.Context, id DatabaseID, cursor notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
 	queryReq := &notionapi.DatabaseQueryRequest{
 		StartCursor: cursor,
 		PageSize:    DEFAULT_PAGE_SIZE,
@@ -213,7 +213,7 @@ func (c *NotionApiClient) getChildBlocks(ctx context.Context, id BlockID, cursor
 }
 
 // Get all child blocks of given page
-func (c *NotionApiClient) GetBlocksOfPages(ctx context.Context, id PageID, cursor notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error) {
+func (c *NotionApiClient) GetPageBlocks(ctx context.Context, id PageID, cursor notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error) {
 	return c.getChildBlocks(ctx, BlockID(id), cursor)
 }
 
