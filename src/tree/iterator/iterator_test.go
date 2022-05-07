@@ -204,3 +204,63 @@ func TestTreeIterator(t *testing.T) {
 		})
 	}
 }
+
+func TestParentIterator(t *testing.T) {
+	tests := []struct {
+		name             string
+		expectedChildren int
+		passNilPointer   bool
+	}{
+		{
+			name:             "Only one node present",
+			expectedChildren: 0,
+			passNilPointer:   false,
+		},
+		{
+			name:             "Parent Present",
+			expectedChildren: 5,
+			passNilPointer:   false,
+		},
+		{
+			name:             "Pass nil pointer",
+			expectedChildren: 0,
+			passNilPointer:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			nodeObj := getRandomNodeObject(t)
+			expectedUUIDList := []node.NodeID{}
+			expectedUUIDList = append(expectedUUIDList, nodeObj.GetID())
+			for i := 1; i <= test.expectedChildren; i++ {
+				childNode := getRandomNodeObject(t)
+				nodeObj.AddChild(childNode)
+				expectedUUIDList = append(expectedUUIDList, childNode.GetID())
+				nodeObj = childNode
+			}
+
+			if test.passNilPointer {
+				nodeObj = nil
+				expectedUUIDList = []node.NodeID{}
+			}
+
+			iter := iterator.GetParentIterator(nodeObj)
+			actualUUIDList := []node.NodeID{}
+
+			for {
+				obj, err := iter.Next()
+
+				if err == iterator.Done {
+					break
+				}
+
+				actualUUIDList = append([]node.NodeID{obj.GetID()}, actualUUIDList...)
+			}
+
+			assert.Equal(t, len(expectedUUIDList), len(actualUUIDList))
+			assert.Equal(t, expectedUUIDList, actualUUIDList)
+		})
+	}
+
+}

@@ -88,6 +88,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.Equal(test.notionObjectId, databaseNode.GetNotionObjectId())
 				assert.False(databaseNode.HasChildNode())
 				assert.Nil(databaseNode.GetChildNode())
+				assert.Nil(databaseNode.GetParentNode())
 				assert.Nil(err1)
 
 				// Assert PageNode
@@ -98,6 +99,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.Equal(test.notionObjectId, pageNode.GetNotionObjectId())
 				assert.False(pageNode.HasChildNode())
 				assert.Nil(pageNode.GetChildNode())
+				assert.Nil(pageNode.GetParentNode())
 				assert.Nil(err2)
 
 				// Assert BlockNode
@@ -108,6 +110,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.Equal(test.notionObjectId, blockNode.GetNotionObjectId())
 				assert.False(blockNode.HasChildNode())
 				assert.Nil(blockNode.GetChildNode())
+				assert.Nil(blockNode.GetParentNode())
 				assert.Nil(err3)
 			}
 		})

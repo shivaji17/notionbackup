@@ -123,6 +123,10 @@ func (nodeObj *Node) GetNotionObjectId() string {
 	return nodeObj.notionObjectId
 }
 
+func (nodeObj *Node) GetParentNode() *Node {
+	return nodeObj.parent
+}
+
 // Adding a child to current node
 func (nodeObj *Node) AddChild(childNode *Node) {
 	childNode.parent = nodeObj
