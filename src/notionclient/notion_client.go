@@ -117,7 +117,7 @@ func (c *NotionApiClient) GetPagesByName(ctx context.Context, name PageName, cur
 func (c *NotionApiClient) getDatabases(ctx context.Context, name DatabaseName, cursor notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
 	databases := []notionapi.Database{}
 
-	resp, err := c.search(ctx, PAGE, cursor, string(name))
+	resp, err := c.search(ctx, DATABASE, cursor, string(name))
 	if err != nil {
 		return nil, "", err
 	}

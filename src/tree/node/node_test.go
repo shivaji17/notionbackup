@@ -16,22 +16,25 @@ import (
 
 func TestCreateNodeForAllTypes(t *testing.T) {
 	tests := []struct {
-		name       string
-		identifier rw.DataIdentifier
-		err        error
-		wantErr    bool
+		name              string
+		storageIdentifier rw.DataIdentifier
+		notionObjectId    string
+		err               error
+		wantErr           bool
 	}{
 		{
-			name:       "Return valid node",
-			identifier: rw.DataIdentifier(uuid.NewString()),
-			err:        nil,
-			wantErr:    false,
+			name:              "Return valid node",
+			storageIdentifier: rw.DataIdentifier(uuid.NewString()),
+			err:               nil,
+			wantErr:           false,
+			notionObjectId:    uuid.NewString(),
 		},
 		{
-			name:       "Return error",
-			identifier: "",
-			err:        errors.New("error while writing object"),
-			wantErr:    true,
+			name:              "Return error",
+			storageIdentifier: "",
+			err:               errors.New("error while writing object"),
+			wantErr:           true,
+			notionObjectId:    "",
 		},
 	}
 
@@ -49,14 +52,22 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			mockedRW := mocks.NewReaderWriter(t)
 
-			mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(test.identifier, test.err)
-			databaseNode, err1 := node.CreateDatabaseNode(context.Background(), &notionapi.Database{}, mockedRW)
+			database := &notionapi.Database{ID: notionapi.ObjectID(test.notionObjectId)}
+			mockedRW.On("WriteDatabase", context.Background(), database).Return(test.storageIdentifier, test.err)
+			databaseNode, err1 := node.CreateDatabaseNode(context.Background(), database, mockedRW)
 
-			mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(test.identifier, test.err)
-			pageNode, err2 := node.CreatePageNode(context.Background(), &notionapi.Page{}, mockedRW)
+			page := &notionapi.Page{ID: notionapi.ObjectID(test.notionObjectId)}
+			mockedRW.On("WritePage", context.Background(), page).Return(test.storageIdentifier, test.err)
+			pageNode, err2 := node.CreatePageNode(context.Background(), page, mockedRW)
 
-			mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(test.identifier, test.err)
-			blockNode, err3 := node.CreateBlockNode(context.Background(), &notionapi.ParagraphBlock{}, mockedRW)
+			block := &notionapi.ParagraphBlock{
+				BasicBlock: notionapi.BasicBlock{
+					ID: notionapi.BlockID(test.notionObjectId),
+				},
+			}
+			mockedRW.On("WriteBlock", context.Background(), block).
+				Return(test.storageIdentifier, test.err)
+			blockNode, err3 := node.CreateBlockNode(context.Background(), block, mockedRW)
 
 			mockedRW.AssertExpectations(t)
 
@@ -68,12 +79,13 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.NotNil(err2)
 				assert.NotNil(err3)
 			} else {
-				expectedIdentifier := rw.DataIdentifier(test.identifier)
+				expectedIdentifier := test.storageIdentifier
 				// Assert DatabaseNode
 				assert.NotNil(databaseNode)
 				assert.Equal(expectedIdentifier, databaseNode.GetIdentifier())
 				assert.Equal(node.NodeType(node.DATABASE), databaseNode.GetNodeType())
 				assert.NotEmpty(databaseNode.GetID())
+				assert.Equal(test.notionObjectId, databaseNode.GetNotionObjectId())
 				assert.False(databaseNode.HasChildNode())
 				assert.Nil(databaseNode.GetChildNode())
 				assert.Nil(err1)
@@ -83,6 +95,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.Equal(expectedIdentifier, pageNode.GetIdentifier())
 				assert.Equal(node.NodeType(node.PAGE), pageNode.GetNodeType())
 				assert.NotEmpty(pageNode.GetID())
+				assert.Equal(test.notionObjectId, pageNode.GetNotionObjectId())
 				assert.False(pageNode.HasChildNode())
 				assert.Nil(pageNode.GetChildNode())
 				assert.Nil(err2)
@@ -92,6 +105,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.Equal(expectedIdentifier, blockNode.GetIdentifier())
 				assert.Equal(node.NodeType(node.BLOCK), blockNode.GetNodeType())
 				assert.NotEmpty(blockNode.GetID())
+				assert.Equal(test.notionObjectId, blockNode.GetNotionObjectId())
 				assert.False(blockNode.HasChildNode())
 				assert.Nil(blockNode.GetChildNode())
 				assert.Nil(err3)
