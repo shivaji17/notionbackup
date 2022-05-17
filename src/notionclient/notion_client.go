@@ -63,11 +63,11 @@ func GetNotionApiClient(ctx context.Context, token notionapi.Token, newClient Ne
 
 // Helper function for searching the required objects i.e. pages and databases
 // with given query parameter
-func (c *NotionApiClient) search(ctx context.Context, objectType ObjectType, cursor notionapi.Cursor, query string) (*notionapi.SearchResponse, error) {
+func (c *NotionApiClient) search(ctx context.Context, objectType string, cursor notionapi.Cursor, query string) (*notionapi.SearchResponse, error) {
 	req := &notionapi.SearchRequest{
 		Query: query,
 		Filter: Filter{
-			Value:    "page",
+			Value:    objectType,
 			Property: "object",
 		},
 		PageSize:    100,
@@ -82,7 +82,7 @@ func (c *NotionApiClient) search(ctx context.Context, objectType ObjectType, cur
 func (c *NotionApiClient) getPages(ctx context.Context, name PageName, cursor notionapi.Cursor) ([]notionapi.Page, notionapi.Cursor, error) {
 	pages := []notionapi.Page{}
 
-	resp, err := c.search(ctx, PAGE, cursor, string(name))
+	resp, err := c.search(ctx, "page", cursor, string(name))
 	if err != nil {
 		return nil, "", err
 	}
@@ -117,7 +117,7 @@ func (c *NotionApiClient) GetPagesByName(ctx context.Context, name PageName, cur
 func (c *NotionApiClient) getDatabases(ctx context.Context, name DatabaseName, cursor notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
 	databases := []notionapi.Database{}
 
-	resp, err := c.search(ctx, DATABASE, cursor, string(name))
+	resp, err := c.search(ctx, "database", cursor, string(name))
 	if err != nil {
 		return nil, "", err
 	}

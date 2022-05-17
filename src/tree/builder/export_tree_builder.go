@@ -29,9 +29,10 @@ type ExportTreeBuilder struct {
 	databaseId2DatabaseNodeMap map[string]*node.Node
 	databaseId2PageListMap     map[string][]string
 	nodeStack                  stack
+	request                    *TreeRequest
 }
 
-func GetExportTreebuilder(ctx context.Context, notionClient notionclient.NotionClient, rw rw.ReaderWriter) TreeBuilder {
+func GetExportTreebuilder(ctx context.Context, notionClient notionclient.NotionClient, rw rw.ReaderWriter, request *TreeRequest) TreeBuilder {
 	return &ExportTreeBuilder{
 		notionClient:               notionClient,
 		rw:                         rw,
@@ -41,62 +42,32 @@ func GetExportTreebuilder(ctx context.Context, notionClient notionclient.NotionC
 		databaseId2DatabaseNodeMap: make(map[string]*node.Node),
 		databaseId2PageListMap:     make(map[string][]string),
 		nodeStack:                  make(stack, 0),
+		request:                    request,
 	}
 }
 
 // Check if Parent type is workspace
-func (builder *ExportTreeBuilder) isParentWorkspace(parent *notionapi.Parent) bool {
+func (builderObj *ExportTreeBuilder) isParentWorkspace(parent *notionapi.Parent) bool {
 	return parent.Type == PARENT_TYPE_WORKSPACE
 }
 
-// Helper function to add page name to pageName2PageIdMap
-/*func (builder *ExportTreeBuilder) addPageNameToPageIdMap(page *notionapi.Page) error {
-	for _, property := range page.Properties {
-		if property.GetType() == PROPERTY_TYPE_TITLE {
-			titleProperty, ok := property.(notionapi.TitleProperty)
-			if !ok {
-				return errors.New("cannot find title property from page object")
-			}
-
-			if len(titleProperty.Title) == 0 {
-				return errors.New("'title' properties are not present in page object")
-			}
-
-			builder.pageName2PageIdMap[string(titleProperty.Title[0].PlainText)] = string(page.ID)
-			return nil
-		}
-	}
-
-	return errors.New("failed to find 'title' property from page object")
-}*/
-
-// Helper function to add database name to databaseName2DatabaseIdMap
-/*func (builder *ExportTreeBuilder) addDatabaseNameToDatabaseIdMap(database *notionapi.Database) error {
-	if len(database.Title) == 0 {
-		return errors.New("'title' properties are not present in database object: " + string(database.ID))
-	}
-
-	builder.databaseName2DatabaseIdMap[string(database.Title[0].PlainText)] = string(database.ID)
-	return nil
-}*/
-
 // Helper function to add database ID to Page Id list mapping
-func (builder *ExportTreeBuilder) addDatabaseIdToPageMapping(page *notionapi.Page) {
+func (builderObj *ExportTreeBuilder) addDatabaseIdToPageMapping(page *notionapi.Page) {
 	if page.Parent.Type != PARENT_TYPE_DATABASE {
 		return
 	}
 
 	databaseId := page.Parent.DatabaseID
-	if pageList, found := builder.databaseId2PageListMap[databaseId.String()]; found {
-		builder.databaseId2PageListMap[databaseId.String()] = append(pageList, page.ID.String())
+	if pageList, found := builderObj.databaseId2PageListMap[databaseId.String()]; found {
+		builderObj.databaseId2PageListMap[databaseId.String()] = append(pageList, page.ID.String())
 		return
 	}
 
-	builder.databaseId2PageListMap[databaseId.String()] = []string{page.ID.String()}
+	builderObj.databaseId2PageListMap[databaseId.String()] = []string{page.ID.String()}
 }
 
 // Helper function to get non-block type parent Node notionObjectId
-func (builder *ExportTreeBuilder) getNonBlockTypeParentNotionObjectId(nodeObj *node.Node) string {
+func (builderObj *ExportTreeBuilder) getNonBlockTypeParentNotionObjectId(nodeObj *node.Node) string {
 	iter := iterator.GetParentIterator(nodeObj)
 	for {
 		obj, err := iter.Next()
@@ -114,17 +85,18 @@ func (builder *ExportTreeBuilder) getNonBlockTypeParentNotionObjectId(nodeObj *n
 
 // Create node object for given page and add it's children to created page node
 // object
-func (builder *ExportTreeBuilder) addPage(ctx context.Context, parentNode *node.Node, pageId string) error {
+func (builderObj *ExportTreeBuilder) addPage(ctx context.Context, parentNode *node.Node, pageId string) error {
 	var pageNode *node.Node
 
-	if nodeObj, found := builder.pageId2PageNodeMap[pageId]; found {
+	if nodeObj, found := builderObj.pageId2PageNodeMap[pageId]; found {
 		pageNode = nodeObj
+		delete(builderObj.pageId2PageNodeMap, pageId)
 	} else {
-		page, err := builder.notionClient.GetPageByID(ctx, notionclient.PageID(pageId))
+		page, err := builderObj.notionClient.GetPageByID(ctx, notionclient.PageID(pageId))
 		if err != nil {
 			return err
 		}
-		nodeObj, err := node.CreatePageNode(ctx, page, builder.rw)
+		nodeObj, err := node.CreatePageNode(ctx, page, builderObj.rw)
 		if err != nil {
 			return err
 		}
@@ -132,22 +104,24 @@ func (builder *ExportTreeBuilder) addPage(ctx context.Context, parentNode *node.
 	}
 
 	parentNode.AddChild(pageNode)
-	builder.nodeStack.Push(&stackContent{nodeObject: pageNode, objectId: pageId})
+	builderObj.nodeStack.Push(pageNode)
 	return nil
 }
 
 // Query all the blocks of the page and add them to given node i.e. parentNode
-func (builder *ExportTreeBuilder) queryAndAddPageChildren(ctx context.Context, parentNode *node.Node, pageId string) error {
+func (builderObj *ExportTreeBuilder) queryAndAddPageChildren(ctx context.Context, parentNode *node.Node, pageId string) error {
 	cursor := notionapi.Cursor("")
 	for {
-		blocks, cursor, err := builder.notionClient.GetPageBlocks(ctx, notionclient.PageID(pageId), cursor)
+		var blocks []notionapi.Block
+		var err error
+		blocks, cursor, err = builderObj.notionClient.GetPageBlocks(ctx, notionclient.PageID(pageId), cursor)
 
 		if err != nil {
 			return err
 		}
 
 		for _, block := range blocks {
-			err = builder.addBlock(ctx, parentNode, block)
+			err = builderObj.addBlock(ctx, parentNode, block)
 			if err != nil {
 				return err
 			}
@@ -163,18 +137,19 @@ func (builder *ExportTreeBuilder) queryAndAddPageChildren(ctx context.Context, p
 
 // Create node object for given database and add it's children to created
 // database node object
-func (builder *ExportTreeBuilder) addDatabase(ctx context.Context, parentNode *node.Node, databaseId string) error {
+func (builderObj *ExportTreeBuilder) addDatabase(ctx context.Context, parentNode *node.Node, databaseId string) error {
 	var databaseNode *node.Node
 
-	if nodeObj, found := builder.databaseId2DatabaseNodeMap[databaseId]; found {
+	if nodeObj, found := builderObj.databaseId2DatabaseNodeMap[databaseId]; found {
 		databaseNode = nodeObj
+		delete(builderObj.databaseId2DatabaseNodeMap, databaseId)
 	} else {
-		database, err := builder.notionClient.GetDatabaseByID(ctx, notionclient.DatabaseID(databaseId))
+		database, err := builderObj.notionClient.GetDatabaseByID(ctx, notionclient.DatabaseID(databaseId))
 		if err != nil {
 			return err
 		}
 
-		nodeObj, err := node.CreateDatabaseNode(ctx, database, builder.rw)
+		nodeObj, err := node.CreateDatabaseNode(ctx, database, builderObj.rw)
 		if err != nil {
 			return err
 		}
@@ -182,42 +157,44 @@ func (builder *ExportTreeBuilder) addDatabase(ctx context.Context, parentNode *n
 	}
 
 	parentNode.AddChild(databaseNode)
-	builder.nodeStack.Push(&stackContent{nodeObject: databaseNode, objectId: databaseId})
+	builderObj.nodeStack.Push(databaseNode)
 	return nil
 }
 
 // Query all the pages of the given database and add them to the given node i.e
 // parentNode
-func (builder *ExportTreeBuilder) queryAndAddDatabaseChildren(ctx context.Context, parentNode *node.Node, databaseId string) error {
-	cursor := notionapi.Cursor("")
+func (builderObj *ExportTreeBuilder) queryAndAddDatabaseChildren(ctx context.Context, parentNode *node.Node, databaseId string) error {
 
-	if pageIdList, found := builder.databaseId2PageListMap[databaseId]; found {
+	if pageIdList, found := builderObj.databaseId2PageListMap[databaseId]; found {
 		for _, pageId := range pageIdList {
-			err := builder.addPage(ctx, parentNode, pageId)
+			err := builderObj.addPage(ctx, parentNode, pageId)
 
 			if err != nil {
 				return err
 			}
 		}
 
+		delete(builderObj.databaseId2PageListMap, databaseId)
 		return nil
 	}
 
+	cursor := notionapi.Cursor("")
 	for {
-		pages, cursor, err := builder.notionClient.GetDatabasePages(ctx, notionclient.DatabaseID(databaseId), cursor)
+		var pages []notionapi.Page
+		var err error
+		pages, cursor, err = builderObj.notionClient.GetDatabasePages(ctx, notionclient.DatabaseID(databaseId), cursor)
 
 		if err != nil {
 			return err
 		}
 
 		for _, page := range pages {
-
-			pageNode, err := node.CreatePageNode(ctx, &page, builder.rw)
+			pageNode, err := node.CreatePageNode(ctx, &page, builderObj.rw)
 			if err != nil {
 				return err
 			}
 			parentNode.AddChild(pageNode)
-			builder.nodeStack.Push(&stackContent{nodeObject: pageNode, objectId: page.ID.String()})
+			builderObj.nodeStack.Push(pageNode)
 		}
 
 		if cursor == "" {
@@ -228,165 +205,52 @@ func (builder *ExportTreeBuilder) queryAndAddDatabaseChildren(ctx context.Contex
 	return nil
 }
 
-// Identify the page for ChildPageBlock from page name and add it to tree
-func (builder *ExportTreeBuilder) handleChildPageBlock(ctx context.Context, parentNode *node.Node, block notionapi.Block) error {
-	childPage, ok := block.(notionapi.ChildPageBlock)
-	if !ok {
-		return errors.New("failed to cast block object to ChildPageBlock")
-	}
-
-	pageName := childPage.ChildPage.Title
-	parentId := builder.getNonBlockTypeParentNotionObjectId(parentNode)
-	cursor := notionapi.Cursor("")
-	for {
-
-		// There can be multiple pages with same name
-		pages, cursor, err := builder.notionClient.GetPagesByName(ctx, notionclient.PageName(pageName), cursor)
-		if err != nil {
-			return err
-		}
-
-		pageFound := false
-		var selectedPage *notionapi.Page
-		for _, page := range pages {
-			if page.Parent.Type == PARENT_TYPE_DATABASE && page.Parent.DatabaseID.String() == parentId {
-				pageFound = true
-				selectedPage = &page
-				break
-			} else if page.Parent.Type == PARENT_TYPE_PAGE && page.Parent.PageID.String() == parentId {
-				pageFound = true
-				selectedPage = &page
-				break
-			}
-		}
-
-		var pageNode *node.Node
-		if pageFound {
-			if nodeObj, found := builder.pageId2PageNodeMap[selectedPage.ID.String()]; found {
-				pageNode = nodeObj
-			} else {
-				nodeObj, err := node.CreatePageNode(ctx, selectedPage, builder.rw)
-				if err != nil {
-					return err
-				}
-				pageNode = nodeObj
-			}
-
-			parentNode.AddChild(pageNode)
-			builder.nodeStack.Push(&stackContent{nodeObject: pageNode, objectId: selectedPage.ID.String()})
-			return nil
-		}
-
-		if cursor == "" {
-			break
-		}
-	}
-
-	return errors.New("page with name '" + childPage.ChildPage.Title + "' does not exist")
-}
-
-// Identify the database for ChildDatabaseBlock from database name and add it to tree
-func (builder *ExportTreeBuilder) handleChildDatabaseBlock(ctx context.Context, parentNode *node.Node, block notionapi.Block) error {
-	childDatabase, ok := block.(notionapi.ChildDatabaseBlock)
-	if !ok {
-		return errors.New("failed to cast block object to ChildPageBlock")
-	}
-
-	databaseName := childDatabase.ChildDatabase.Title
-	parentId := builder.getNonBlockTypeParentNotionObjectId(parentNode)
-	cursor := notionapi.Cursor("")
-	for {
-
-		// There can be multiple databases with same name
-		databases, cursor, err := builder.notionClient.GetDatabasesByName(ctx, notionclient.DatabaseName(databaseName), cursor)
-		if err != nil {
-			return err
-		}
-
-		databaseFound := false
-		var selectedDatabase *notionapi.Database
-		for _, database := range databases {
-			if database.Parent.Type == PARENT_TYPE_DATABASE && database.Parent.DatabaseID.String() == parentId {
-				databaseFound = true
-				selectedDatabase = &database
-				break
-			} else if database.Parent.Type == PARENT_TYPE_PAGE && database.Parent.PageID.String() == parentId {
-				databaseFound = true
-				selectedDatabase = &database
-				break
-			}
-		}
-
-		var databaseNode *node.Node
-		if databaseFound {
-			if nodeObj, found := builder.databaseId2DatabaseNodeMap[selectedDatabase.ID.String()]; found {
-				databaseNode = nodeObj
-			} else {
-				nodeObj, err := node.CreateDatabaseNode(ctx, selectedDatabase, builder.rw)
-				if err != nil {
-					return err
-				}
-				databaseNode = nodeObj
-			}
-
-			parentNode.AddChild(databaseNode)
-			builder.nodeStack.Push(&stackContent{nodeObject: databaseNode, objectId: selectedDatabase.ID.String()})
-			return nil
-		}
-
-		if cursor == "" {
-			break
-		}
-	}
-
-	return errors.New("database with name '" + childDatabase.ChildDatabase.Title + "' does not exist")
-}
-
 // Create node object for given block and add it's children to created
 // block node object
-func (builder *ExportTreeBuilder) addBlock(ctx context.Context, parentNode *node.Node, block notionapi.Block) error {
-	blockNode, err := node.CreateBlockNode(ctx, block, builder.rw)
+func (builderObj *ExportTreeBuilder) addBlock(ctx context.Context, parentNode *node.Node, block notionapi.Block) error {
+	blockNode, err := node.CreateBlockNode(ctx, block, builderObj.rw)
 
 	if err != nil {
 		return err
 	}
 	parentNode.AddChild(blockNode)
 
-	if !block.GetHasChildren() {
-		return nil
+	if block.GetType() == CHILD_TYPE_DATABASE {
+		return builderObj.addDatabase(ctx, blockNode, block.GetID().String())
 	}
 
 	if block.GetType() == CHILD_TYPE_PAGE {
-		return builder.handleChildPageBlock(ctx, blockNode, block)
-	}
-	if block.GetType() == CHILD_TYPE_DATABASE {
-		return builder.handleChildDatabaseBlock(ctx, blockNode, block)
+		return builderObj.addPage(ctx, blockNode, block.GetID().String())
 	}
 
-	builder.nodeStack.Push(&stackContent{nodeObject: blockNode, objectId: block.GetID().String()})
-	return builder.queryAndAddBlockChildren(ctx, blockNode, string(block.GetID()))
+	if block.GetHasChildren() {
+		builderObj.nodeStack.Push(blockNode)
+	}
 
+	return nil
 }
 
 // Query all the child blocks of the given block and add them to the given node
 // i.e. parentNode
-func (builder *ExportTreeBuilder) queryAndAddBlockChildren(ctx context.Context, parentNode *node.Node, blockId string) error {
+func (builderObj *ExportTreeBuilder) queryAndAddBlockChildren(ctx context.Context, parentNode *node.Node, blockId string) error {
 	cursor := notionapi.Cursor("")
 	for {
-		blocks, cursor, err := builder.notionClient.GetChildBlocksOfBlock(ctx, notionclient.BlockID(blockId), cursor)
+		var blocks []notionapi.Block
+		var err error
+		blocks, cursor, err = builderObj.notionClient.GetChildBlocksOfBlock(ctx, notionclient.BlockID(blockId), cursor)
 
 		if err != nil {
 			return err
 		}
 
 		for _, block := range blocks {
-			err = builder.addBlock(ctx, parentNode, block)
+			err = builderObj.addBlock(ctx, parentNode, block)
 			if err != nil {
 				return err
 			}
 		}
 
-		if cursor == "" {
+		if cursor.String() == "" {
 			break
 		}
 	}
@@ -397,39 +261,36 @@ func (builder *ExportTreeBuilder) queryAndAddBlockChildren(ctx context.Context, 
 // This function will fetch all the pages. Pages which belong to workspace will
 // be added to tree and stack and rest of them will be cached which will be
 // later used while building the tree.
-func (builder *ExportTreeBuilder) addWorkspacePages(ctx context.Context, parentNode *node.Node) error {
+func (builderObj *ExportTreeBuilder) addWorkspacePages(ctx context.Context, parentNode *node.Node) error {
 	cursor := notionapi.Cursor("")
 	for {
-		pages, cursor, err := builder.notionClient.GetAllPages(ctx, cursor)
+		var pages []notionapi.Page
+		var err error
+		pages, cursor, err = builderObj.notionClient.GetAllPages(ctx, cursor)
 
 		if err != nil {
 			return err
 		}
 
 		for _, page := range pages {
-			if builder.isParentWorkspace(&page.Parent) {
-				pageNode, err := node.CreatePageNode(ctx, &page, builder.rw)
+			if builderObj.isParentWorkspace(&page.Parent) {
+				pageNode, err := node.CreatePageNode(ctx, &page, builderObj.rw)
 				if err != nil {
 					return err
 				}
 				parentNode.AddChild(pageNode)
-				object := &stackContent{
-					nodeObject: pageNode,
-					objectId:   page.ID.String(),
-				}
-
-				builder.nodeStack.Push(object)
+				builderObj.nodeStack.Push(pageNode)
 				continue
 			}
 
 			// cache for later use
-			pageNode, err := node.CreatePageNode(ctx, &page, builder.rw)
+			pageNode, err := node.CreatePageNode(ctx, &page, builderObj.rw)
 			if err != nil {
 				return nil
 			}
 
-			builder.addDatabaseIdToPageMapping(&page)
-			builder.pageId2PageNodeMap[string(page.ID)] = pageNode
+			builderObj.addDatabaseIdToPageMapping(&page)
+			builderObj.pageId2PageNodeMap[string(page.ID)] = pageNode
 		}
 
 		if cursor == "" {
@@ -442,37 +303,34 @@ func (builder *ExportTreeBuilder) addWorkspacePages(ctx context.Context, parentN
 // This function will fetch all the databases. Databases which belong to
 // workspace will be added to tree and stack and rest of them will be cached
 // which will be later used while building the tree.
-func (builder *ExportTreeBuilder) addWorkspaceDatabases(ctx context.Context, parentNode *node.Node) error {
+func (builderObj *ExportTreeBuilder) addWorkspaceDatabases(ctx context.Context, parentNode *node.Node) error {
 	cursor := notionapi.Cursor("")
 	for {
-		databases, cursor, err := builder.notionClient.GetAllDatabases(ctx, cursor)
+		var databases []notionapi.Database
+		var err error
+		databases, cursor, err = builderObj.notionClient.GetAllDatabases(ctx, cursor)
 		if err != nil {
 			return err
 		}
 
 		for _, database := range databases {
-			if builder.isParentWorkspace(&database.Parent) {
-				databaseNode, err := node.CreateDatabaseNode(ctx, &database, builder.rw)
+			if builderObj.isParentWorkspace(&database.Parent) {
+				databaseNode, err := node.CreateDatabaseNode(ctx, &database, builderObj.rw)
 				if err != nil {
 					return err
 				}
 				parentNode.AddChild(databaseNode)
-				object := &stackContent{
-					nodeObject: databaseNode,
-					objectId:   database.ID.String(),
-				}
-
-				builder.nodeStack.Push(object)
+				builderObj.nodeStack.Push(databaseNode)
 				continue
 			}
 
 			// cache for later use
-			databaseNode, err := node.CreateDatabaseNode(ctx, &database, builder.rw)
+			databaseNode, err := node.CreateDatabaseNode(ctx, &database, builderObj.rw)
 			if err != nil {
 				return nil
 			}
 
-			builder.databaseId2DatabaseNodeMap[string(database.ID)] = databaseNode
+			builderObj.databaseId2DatabaseNodeMap[string(database.ID)] = databaseNode
 		}
 
 		if cursor == "" {
@@ -483,19 +341,19 @@ func (builder *ExportTreeBuilder) addWorkspaceDatabases(ctx context.Context, par
 	return nil
 }
 
-func (builder *ExportTreeBuilder) buildTreeUntilStackEmpty(ctx context.Context) error {
-	for !builder.nodeStack.IsEmpty() {
-		object, err := builder.nodeStack.Pop()
+func (builderObj *ExportTreeBuilder) buildTreeUntilStackEmpty(ctx context.Context) error {
+	for {
+		object, err := builderObj.nodeStack.Pop()
 		if err == StackEmpty {
 			break
 		}
 
-		if object.nodeObject.GetNodeType() == node.PAGE {
-			err = builder.queryAndAddPageChildren(ctx, object.nodeObject, object.objectId)
-		} else if object.nodeObject.GetNodeType() == node.DATABASE {
-			err = builder.queryAndAddDatabaseChildren(ctx, object.nodeObject, object.objectId)
-		} else if object.nodeObject.GetNodeType() == node.BLOCK {
-			err = builder.queryAndAddBlockChildren(ctx, object.nodeObject, object.objectId)
+		if object.GetNodeType() == node.PAGE {
+			err = builderObj.queryAndAddPageChildren(ctx, object, object.GetNotionObjectId())
+		} else if object.GetNodeType() == node.DATABASE {
+			err = builderObj.queryAndAddDatabaseChildren(ctx, object, object.GetNotionObjectId())
+		} else if object.GetNodeType() == node.BLOCK {
+			err = builderObj.queryAndAddBlockChildren(ctx, object, object.GetNotionObjectId())
 		}
 
 		if err != nil {
@@ -508,39 +366,70 @@ func (builder *ExportTreeBuilder) buildTreeUntilStackEmpty(ctx context.Context) 
 
 // This function will build the tree for whole workspace depending on Databases
 // and Pages the token has access to
-func (builder *ExportTreeBuilder) buildTreeForWorkspace(ctx context.Context) error {
+func (builderObj *ExportTreeBuilder) buildTreeForWorkspace(ctx context.Context) error {
 	rootNode := node.CreateRootNode()
 
-	err := builder.addWorkspacePages(ctx, rootNode)
+	err := builderObj.addWorkspacePages(ctx, rootNode)
 	if err != nil {
 		return err
 	}
 
-	err = builder.addWorkspaceDatabases(ctx, rootNode)
+	err = builderObj.addWorkspaceDatabases(ctx, rootNode)
 	if err != nil {
 		return err
 	}
 
-	err = builder.buildTreeUntilStackEmpty(ctx)
+	err = builderObj.buildTreeUntilStackEmpty(ctx)
 	if err != nil {
 		return err
 	}
 
-	builder.rootNode = rootNode
+	builderObj.rootNode = rootNode
+	return nil
+}
+
+func (builderObj *ExportTreeBuilder) buildTreeForGivenObjectIds(ctx context.Context) error {
+	rootNode := node.CreateRootNode()
+
+	for _, pageId := range builderObj.request.PageIdList {
+		err := builderObj.addPage(ctx, rootNode, pageId)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, databaseId := range builderObj.request.DatabaseIdList {
+		err := builderObj.addDatabase(ctx, rootNode, databaseId)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := builderObj.buildTreeUntilStackEmpty(ctx)
+	if err != nil {
+		return err
+	}
+
+	builderObj.rootNode = rootNode
 	return nil
 }
 
 // Build the tree for the given config
-func (builder *ExportTreeBuilder) BuildTree(ctx context.Context) error {
-	if builder.rootNode != nil {
+func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) error {
+	if builderObj.rootNode != nil {
 		return nil
 	}
 
-	builder.err = builder.buildTreeForWorkspace(ctx)
-	return builder.err
+	if len(builderObj.request.DatabaseIdList) == 0 && len(builderObj.request.PageIdList) == 0 {
+		builderObj.err = builderObj.buildTreeForWorkspace(ctx)
+	} else {
+		builderObj.err = builderObj.buildTreeForGivenObjectIds(ctx)
+	}
+
+	return builderObj.err
 }
 
 // Get the root node of the tree
-func (builder *ExportTreeBuilder) GetRootNode() (*node.Node, error) {
-	return builder.rootNode, builder.err
+func (builderObj *ExportTreeBuilder) GetRootNode() (*node.Node, error) {
+	return builderObj.rootNode, builderObj.err
 }
