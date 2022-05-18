@@ -21,66 +21,72 @@ const (
 )
 
 type Node struct {
-	id         NodeID
-	nodeType   NodeType
-	identifier rw.DataIdentifier
+	id                NodeID
+	nodeType          NodeType
+	storageIdentifier rw.DataIdentifier
+	notionObjectId    string
 
 	// Using N-ary tree implementation
 	// https://www.interviewbit.com/blog/n-ary-tree/
 	sibling *Node
 	child   *Node
+
+	// Link to parent object
+	parent *Node
 }
 
 // Helper function to create node with given NodeType
-func createNode(id NodeID, nodeType NodeType, identifier rw.DataIdentifier) (*Node, error) {
+func createNode(id NodeID, nodeType NodeType, storageIdentifier rw.DataIdentifier, notionObjectId string) (*Node, error) {
 	return &Node{
-		id:         id,
-		nodeType:   nodeType,
-		sibling:    nil,
-		child:      nil,
-		identifier: identifier,
+		id:                id,
+		nodeType:          nodeType,
+		sibling:           nil,
+		child:             nil,
+		storageIdentifier: storageIdentifier,
+		notionObjectId:    notionObjectId,
 	}, nil
 }
 
 // Create database node
 func CreateDatabaseNode(ctx context.Context, database *notionapi.Database, rw rw.ReaderWriter) (*Node, error) {
-	identifier, err := rw.WriteDatabase(ctx, database)
+	storageIdentifier, err := rw.WriteDatabase(ctx, database)
 	if err != nil {
 		return nil, err
 	}
 
-	return createNode(NodeID(uuid.New().String()), DATABASE, identifier)
+	return createNode(NodeID(uuid.New().String()), DATABASE, storageIdentifier, database.ID.String())
 }
 
 // Create page node
 func CreatePageNode(ctx context.Context, page *notionapi.Page, rw rw.ReaderWriter) (*Node, error) {
-	identifier, err := rw.WritePage(ctx, page)
+	storageIdentifier, err := rw.WritePage(ctx, page)
 	if err != nil {
 		return nil, err
 	}
 
-	return createNode(NodeID(uuid.New().String()), PAGE, identifier)
+	return createNode(NodeID(uuid.New().String()), PAGE, storageIdentifier, page.ID.String())
 }
 
 // Create block node
 func CreateBlockNode(ctx context.Context, block notionapi.Block, rw rw.ReaderWriter) (*Node, error) {
-	identifier, err := rw.WriteBlock(ctx, block)
+	storageIdentifier, err := rw.WriteBlock(ctx, block)
 	if err != nil {
 		return nil, err
 	}
 
-	return createNode(NodeID(uuid.New().String()), BLOCK, identifier)
+	return createNode(NodeID(uuid.New().String()), BLOCK, storageIdentifier, block.GetID().String())
 }
 
 // Special node which will act as a root node for a tree
 // Root node will always have Nil UUID i.e. 00000000-0000-0000-0000-000000000000
 func CreateRootNode() *Node {
 	return &Node{
-		id:         NodeID(uuid.Nil.String()),
-		nodeType:   ROOT,
-		sibling:    nil,
-		child:      nil,
-		identifier: "",
+		id:                NodeID(uuid.Nil.String()),
+		nodeType:          ROOT,
+		sibling:           nil,
+		child:             nil,
+		storageIdentifier: "",
+		parent:            nil,
 	}
 }
 
@@ -94,7 +100,7 @@ func (nodeObj *Node) GetNodeType() NodeType {
 }
 
 func (nodeObj *Node) GetIdentifier() rw.DataIdentifier {
-	return nodeObj.identifier
+	return nodeObj.storageIdentifier
 }
 
 func (nodeObj *Node) HasChildNode() bool {
@@ -113,8 +119,17 @@ func (nodeObj *Node) GetSiblingNode() *Node {
 	return nodeObj.sibling
 }
 
+func (nodeObj *Node) GetNotionObjectId() string {
+	return nodeObj.notionObjectId
+}
+
+func (nodeObj *Node) GetParentNode() *Node {
+	return nodeObj.parent
+}
+
 // Adding a child to current node
 func (nodeObj *Node) AddChild(childNode *Node) {
+	childNode.parent = nodeObj
 	if nodeObj.child == nil {
 		nodeObj.child = childNode
 	} else {
