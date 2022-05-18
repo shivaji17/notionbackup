@@ -73,7 +73,8 @@ func TestGetFileReaderWriter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			fileRW, err := rw.GetFileReaderWriter(test.baseDirPath, test.createDirIfNotExist)
+			fileRW, err := rw.GetFileReaderWriter(test.baseDirPath,
+				test.createDirIfNotExist)
 			if test.wantErr {
 				assert.Nil(t, fileRW)
 				assert.NotNil(t, err)
@@ -132,7 +133,8 @@ func TestWriteDatabase(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			identifier, err := filerw.WriteDatabase(context.Background(), test.databaseObj)
+			identifier, err := filerw.WriteDatabase(context.Background(),
+				test.databaseObj)
 			if test.wantErr {
 				assert.Empty(t, identifier)
 				assert.NotNil(t, err)
@@ -176,7 +178,8 @@ func TestReadDatabase(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			database, err := filerw.ReadDatabase(context.Background(), rw.DataIdentifier(test.filePath))
+			database, err := filerw.ReadDatabase(context.Background(),
+				rw.DataIdentifier(test.filePath))
 			if test.wantErr {
 				assert.Nil(t, database)
 				assert.NotNil(t, err)
@@ -352,7 +355,8 @@ func TestReadPage(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			page, err := filerw.ReadPage(context.Background(), rw.DataIdentifier(test.filePath))
+			page, err := filerw.ReadPage(context.Background(),
+				rw.DataIdentifier(test.filePath))
 			if test.wantErr {
 				assert.Nil(t, page)
 				assert.NotNil(t, err)
@@ -452,7 +456,8 @@ func TestReadBlock(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			block, err := filerw.ReadBlock(context.Background(), rw.DataIdentifier(test.filePath))
+			block, err := filerw.ReadBlock(context.Background(),
+				rw.DataIdentifier(test.filePath))
 			if test.wantErr {
 				assert.Nil(t, block)
 				assert.NotNil(t, err)

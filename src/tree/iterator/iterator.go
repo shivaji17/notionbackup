@@ -12,7 +12,8 @@ import (
 // when there are no more items to iterate
 var Done = errors.New("no more items in iterator")
 
-// Every Iterator type must extend this interface while implementing the iterator
+// Every Iterator type must extend this interface while implementing the
+// iterator
 type Iterator interface {
 	Next() (*node.Node, error)
 }

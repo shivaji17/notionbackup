@@ -17,7 +17,8 @@ func ParsePageJsonString(jsonBytes []byte) (*notionapi.Page, error) {
 	return page, nil
 }
 
-func ParseSearchResponseJsonString(jsonBytes []byte) (*notionapi.SearchResponse, error) {
+func ParseSearchResponseJsonString(jsonBytes []byte) (*notionapi.SearchResponse,
+	error) {
 	searchResponse := &notionapi.SearchResponse{}
 	err := json.Unmarshal(jsonBytes, &searchResponse)
 	if err != nil {

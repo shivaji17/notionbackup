@@ -41,13 +41,15 @@ const (
 )
 
 // Mocking the NewClient from github.com/jomei/notionapi
-func newMockedClient(token notionapi.Token, opt ...notionapi.ClientOption) *notionapi.Client {
+func newMockedClient(token notionapi.Token,
+	opt ...notionapi.ClientOption) *notionapi.Client {
 	return &notionapi.Client{}
 }
 
 func TestGetNotionClient(t *testing.T) {
 	t.Run("Get Client with valid parameters", func(t *testing.T) {
-		client := notionclient.GetNotionApiClient(context.Background(), "asdasd", newMockedClient)
+		client := notionclient.GetNotionApiClient(context.Background(),
+			"asdasd", newMockedClient)
 		assert.NotNil(t, client)
 	})
 }
@@ -59,7 +61,8 @@ type MockedSearchService struct {
 	err       error
 }
 
-func GetMockedSearchService(t *testing.T, mockFilePath string, err error) *notionclient.NotionApiClient {
+func GetMockedSearchService(t *testing.T, mockFilePath string,
+	err error) *notionclient.NotionApiClient {
 	if err != nil {
 		return &notionclient.NotionApiClient{
 			Client: &notionapi.Client{
@@ -101,7 +104,8 @@ func GetMockedSearchService(t *testing.T, mockFilePath string, err error) *notio
 	}
 }
 
-func (srv *MockedSearchService) Do(ctx context.Context, req *notionapi.SearchRequest) (*notionapi.SearchResponse, error) {
+func (srv *MockedSearchService) Do(ctx context.Context,
+	req *notionapi.SearchRequest) (*notionapi.SearchResponse, error) {
 	if req.StartCursor != "" {
 		return srv.response2, srv.err
 	}
@@ -156,7 +160,8 @@ func TestGetAllPages(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := GetMockedSearchService(t, test.filePath, test.err)
-			pages, cursor, err := client.GetAllPages(context.Background(), notionapi.Cursor(""))
+			pages, cursor, err := client.GetAllPages(context.Background(),
+				notionapi.Cursor(""))
 			if test.wantErr {
 				assert.Nil(t, pages)
 				assert.NotNil(t, err)
@@ -216,7 +221,8 @@ func TestGetPagesByName(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := GetMockedSearchService(t, test.filePath, test.err)
-			pages, _, err := client.GetPagesByName(context.Background(), notionclient.PageName(test.pageName), "")
+			pages, _, err := client.GetPagesByName(context.Background(),
+				notionclient.PageName(test.pageName), "")
 			if test.wantErr {
 				assert.Nil(t, pages)
 				assert.NotNil(t, err)
@@ -326,7 +332,8 @@ func TestGetDatabasesByName(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := GetMockedSearchService(t, test.filePath, test.err)
-			databases, _, err := client.GetDatabasesByName(context.Background(), notionclient.DatabaseName(test.databaseName), "")
+			databases, _, err := client.GetDatabasesByName(context.Background(),
+				notionclient.DatabaseName(test.databaseName), "")
 			if test.wantErr {
 				assert.Nil(t, databases)
 				assert.NotNil(t, err)
@@ -348,7 +355,8 @@ type MockedPageService struct {
 	err  error
 }
 
-func GetMockedPageService(t *testing.T, mockFilePath string, err error) *notionclient.NotionApiClient {
+func GetMockedPageService(t *testing.T, mockFilePath string,
+	err error) *notionclient.NotionApiClient {
 	if err != nil {
 		return &notionclient.NotionApiClient{
 			Client: &notionapi.Client{
@@ -381,16 +389,19 @@ func GetMockedPageService(t *testing.T, mockFilePath string, err error) *notionc
 	}
 }
 
-func (srv *MockedPageService) Get(ctx context.Context, id notionapi.PageID) (*notionapi.Page, error) {
+func (srv *MockedPageService) Get(ctx context.Context,
+	id notionapi.PageID) (*notionapi.Page, error) {
 	return srv.page, srv.err
 }
 
-func (srv *MockedPageService) Create(ctx context.Context, req *notionapi.PageCreateRequest) (*notionapi.Page, error) {
+func (srv *MockedPageService) Create(ctx context.Context,
+	req *notionapi.PageCreateRequest) (*notionapi.Page, error) {
 	// TODO
 	return nil, nil
 }
 
-func (srv *MockedPageService) Update(ctx context.Context, id notionapi.PageID, req *notionapi.PageUpdateRequest) (*notionapi.Page, error) {
+func (srv *MockedPageService) Update(ctx context.Context, id notionapi.PageID,
+	req *notionapi.PageUpdateRequest) (*notionapi.Page, error) {
 	// TODO
 	return nil, nil
 }
@@ -425,7 +436,8 @@ func TestGetPageByID(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := GetMockedPageService(t, test.filePath, test.err)
-			page, err := client.GetPageByID(context.Background(), notionclient.PageID(test.pageid))
+			page, err := client.GetPageByID(context.Background(),
+				notionclient.PageID(test.pageid))
 			if test.wantErr {
 				assert.Nil(t, page)
 				assert.NotNil(t, err)
@@ -449,7 +461,8 @@ type MockedDatabaseService struct {
 	err                   error
 }
 
-func GetMockedDatabaseService(t *testing.T, databaseFilePath string, databaseQueryResponseFile string, err error) *notionclient.NotionApiClient {
+func GetMockedDatabaseService(t *testing.T, databaseFilePath string,
+	databaseQueryResponseFile string, err error) *notionclient.NotionApiClient {
 	if err != nil {
 		return &notionclient.NotionApiClient{
 			Client: &notionapi.Client{
@@ -495,27 +508,35 @@ func GetMockedDatabaseService(t *testing.T, databaseFilePath string, databaseQue
 	}
 }
 
-func (srv *MockedDatabaseService) Get(ctx context.Context, id notionapi.DatabaseID) (*notionapi.Database, error) {
+func (srv *MockedDatabaseService) Get(ctx context.Context,
+	id notionapi.DatabaseID) (*notionapi.Database, error) {
 	return srv.database, srv.err
 }
 
-func (srv *MockedDatabaseService) List(ctx context.Context, pagination *notionapi.Pagination) (*notionapi.DatabaseListResponse, error) {
+func (srv *MockedDatabaseService) List(ctx context.Context,
+	pagination *notionapi.Pagination) (*notionapi.DatabaseListResponse, error) {
 	// Not needed. Just keeping as a placeholder for DatabaseService interface
 	// List REST API call is deprecated by Notion
 	return nil, nil
 }
 
-func (srv *MockedDatabaseService) Query(ctx context.Context, id notionapi.DatabaseID, req *notionapi.DatabaseQueryRequest) (*notionapi.DatabaseQueryResponse, error) {
+func (srv *MockedDatabaseService) Query(ctx context.Context,
+	id notionapi.DatabaseID,
+	req *notionapi.DatabaseQueryRequest) (*notionapi.DatabaseQueryResponse,
+	error) {
 	// TODO
 	return srv.databaseQueryResponse, srv.err
 }
 
-func (srv *MockedDatabaseService) Update(ctx context.Context, id notionapi.DatabaseID, req *notionapi.DatabaseUpdateRequest) (*notionapi.Database, error) {
+func (srv *MockedDatabaseService) Update(ctx context.Context,
+	id notionapi.DatabaseID,
+	req *notionapi.DatabaseUpdateRequest) (*notionapi.Database, error) {
 	// TODO
 	return nil, nil
 }
 
-func (srv *MockedDatabaseService) Create(ctx context.Context, req *notionapi.DatabaseCreateRequest) (*notionapi.Database, error) {
+func (srv *MockedDatabaseService) Create(ctx context.Context,
+	req *notionapi.DatabaseCreateRequest) (*notionapi.Database, error) {
 	// TODO
 	return nil, nil
 }
@@ -552,8 +573,10 @@ func TestGetDatabaseByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := GetMockedDatabaseService(t, test.databaseFilePath, test.databaseQueryRspFilePath, test.err)
-			database, err := client.GetDatabaseByID(context.Background(), notionclient.DatabaseID(test.databaseid))
+			client := GetMockedDatabaseService(t, test.databaseFilePath,
+				test.databaseQueryRspFilePath, test.err)
+			database, err := client.GetDatabaseByID(context.Background(),
+				notionclient.DatabaseID(test.databaseid))
 			if test.wantErr {
 				assert.Nil(t, database)
 				assert.NotNil(t, err)
@@ -610,8 +633,10 @@ func TestGetPagesOfDatabase(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := GetMockedDatabaseService(t, test.databaseFilePath, test.databaseQueryRspFilePath, test.err)
-			pages, _, err := client.GetDatabasePages(context.Background(), notionclient.DatabaseID(test.databaseid), notionapi.Cursor(""))
+			client := GetMockedDatabaseService(t, test.databaseFilePath,
+				test.databaseQueryRspFilePath, test.err)
+			pages, _, err := client.GetDatabasePages(context.Background(),
+				notionclient.DatabaseID(test.databaseid), notionapi.Cursor(""))
 			if test.wantErr {
 				assert.Nil(t, pages)
 				assert.NotNil(t, err)
@@ -635,7 +660,8 @@ type MockedBlockService struct {
 	err         error
 }
 
-func GetMockedBlockService(t *testing.T, childBlocksFilePath string, blockFilePath string, err error) *notionclient.NotionApiClient {
+func GetMockedBlockService(t *testing.T, childBlocksFilePath string,
+	blockFilePath string, err error) *notionclient.NotionApiClient {
 	if err != nil {
 		return &notionclient.NotionApiClient{
 			Client: &notionapi.Client{
@@ -685,25 +711,32 @@ func GetMockedBlockService(t *testing.T, childBlocksFilePath string, blockFilePa
 	}
 }
 
-func (srv *MockedBlockService) GetChildren(ctx context.Context, id notionapi.BlockID, pagination *notionapi.Pagination) (*notionapi.GetChildrenResponse, error) {
+func (srv *MockedBlockService) GetChildren(
+	ctx context.Context, id notionapi.BlockID,
+	pagination *notionapi.Pagination) (*notionapi.GetChildrenResponse, error) {
 	return srv.childBlocks, srv.err
 }
 
-func (srv *MockedBlockService) AppendChildren(ctx context.Context, id notionapi.BlockID, req *notionapi.AppendBlockChildrenRequest) (*notionapi.AppendBlockChildrenResponse, error) {
+func (srv *MockedBlockService) AppendChildren(ctx context.Context,
+	id notionapi.BlockID, req *notionapi.AppendBlockChildrenRequest) (
+	*notionapi.AppendBlockChildrenResponse, error) {
 	// TODO
 	return nil, nil
 }
 
-func (srv *MockedBlockService) Get(ctx context.Context, id notionapi.BlockID) (notionapi.Block, error) {
+func (srv *MockedBlockService) Get(ctx context.Context, id notionapi.BlockID) (
+	notionapi.Block, error) {
 	return srv.block, srv.err
 }
 
-func (srv *MockedBlockService) Delete(ctx context.Context, id notionapi.BlockID) (notionapi.Block, error) {
+func (srv *MockedBlockService) Delete(ctx context.Context,
+	id notionapi.BlockID) (notionapi.Block, error) {
 	// TODO
 	return nil, nil
 }
 
-func (srv *MockedBlockService) Update(ctx context.Context, id notionapi.BlockID, request *notionapi.BlockUpdateRequest) (notionapi.Block, error) {
+func (srv *MockedBlockService) Update(ctx context.Context, id notionapi.BlockID,
+	request *notionapi.BlockUpdateRequest) (notionapi.Block, error) {
 	// TODO
 	return nil, nil
 }
@@ -719,8 +752,9 @@ func TestGetBlocksOfPagesAndChildBlocksOfBlock(t *testing.T) {
 		err                 error
 	}{
 		{
-			name:                "Get child block for Page",
-			blockID:             notionapi.BlockID("e50c7b3ae61c4b26a6f96dfef9f74148"),
+			name: "Get child block for Page",
+			blockID: notionapi.BlockID(
+				"e50c7b3ae61c4b26a6f96dfef9f74148"),
 			childBlocksFilePath: PAGE_BLOCKS_JSON,
 			blockFilePath:       BLOCKS_JSON,
 			wantErr:             false,
@@ -749,9 +783,13 @@ func TestGetBlocksOfPagesAndChildBlocksOfBlock(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := GetMockedBlockService(t, test.childBlocksFilePath, test.blockFilePath, test.err)
-			childBlocks, _, err := client.GetPageBlocks(context.Background(), notionclient.PageID(test.blockID), notionapi.Cursor(""))
-			childBlocks2, _, err2 := client.GetChildBlocksOfBlock(context.Background(), notionclient.BlockID(test.blockID), notionapi.Cursor(""))
+			client := GetMockedBlockService(t, test.childBlocksFilePath,
+				test.blockFilePath, test.err)
+			childBlocks, _, err := client.GetPageBlocks(context.Background(),
+				notionclient.PageID(test.blockID), notionapi.Cursor(""))
+			childBlocks2, _, err2 := client.GetChildBlocksOfBlock(
+				context.Background(), notionclient.BlockID(test.blockID),
+				notionapi.Cursor(""))
 			if test.wantErr {
 				assert.Nil(t, childBlocks)
 				assert.NotNil(t, err)
@@ -801,8 +839,10 @@ func TestGetBlockByID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := GetMockedBlockService(t, test.childBlocksFilePath, test.blockFilePath, test.err)
-			block, err := client.GetBlockByID(context.Background(), notionclient.BlockID(test.blockID))
+			client := GetMockedBlockService(t, test.childBlocksFilePath,
+				test.blockFilePath, test.err)
+			block, err := client.GetBlockByID(context.Background(),
+				notionclient.BlockID(test.blockID))
 
 			if test.wantErr {
 				assert.Nil(t, block)

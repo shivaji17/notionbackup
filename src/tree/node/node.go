@@ -36,7 +36,8 @@ type Node struct {
 }
 
 // Helper function to create node with given NodeType
-func createNode(id NodeID, nodeType NodeType, storageIdentifier rw.DataIdentifier, notionObjectId string) (*Node, error) {
+func createNode(id NodeID, nodeType NodeType,
+	storageIdentifier rw.DataIdentifier, notionObjectId string) (*Node, error) {
 	return &Node{
 		id:                id,
 		nodeType:          nodeType,
@@ -48,33 +49,39 @@ func createNode(id NodeID, nodeType NodeType, storageIdentifier rw.DataIdentifie
 }
 
 // Create database node
-func CreateDatabaseNode(ctx context.Context, database *notionapi.Database, rw rw.ReaderWriter) (*Node, error) {
+func CreateDatabaseNode(ctx context.Context, database *notionapi.Database,
+	rw rw.ReaderWriter) (*Node, error) {
 	storageIdentifier, err := rw.WriteDatabase(ctx, database)
 	if err != nil {
 		return nil, err
 	}
 
-	return createNode(NodeID(uuid.New().String()), DATABASE, storageIdentifier, database.ID.String())
+	return createNode(NodeID(uuid.New().String()), DATABASE, storageIdentifier,
+		database.ID.String())
 }
 
 // Create page node
-func CreatePageNode(ctx context.Context, page *notionapi.Page, rw rw.ReaderWriter) (*Node, error) {
+func CreatePageNode(ctx context.Context, page *notionapi.Page,
+	rw rw.ReaderWriter) (*Node, error) {
 	storageIdentifier, err := rw.WritePage(ctx, page)
 	if err != nil {
 		return nil, err
 	}
 
-	return createNode(NodeID(uuid.New().String()), PAGE, storageIdentifier, page.ID.String())
+	return createNode(NodeID(uuid.New().String()), PAGE, storageIdentifier,
+		page.ID.String())
 }
 
 // Create block node
-func CreateBlockNode(ctx context.Context, block notionapi.Block, rw rw.ReaderWriter) (*Node, error) {
+func CreateBlockNode(ctx context.Context, block notionapi.Block,
+	rw rw.ReaderWriter) (*Node, error) {
 	storageIdentifier, err := rw.WriteBlock(ctx, block)
 	if err != nil {
 		return nil, err
 	}
 
-	return createNode(NodeID(uuid.New().String()), BLOCK, storageIdentifier, block.GetID().String())
+	return createNode(NodeID(uuid.New().String()), BLOCK, storageIdentifier,
+		block.GetID().String())
 }
 
 // Special node which will act as a root node for a tree

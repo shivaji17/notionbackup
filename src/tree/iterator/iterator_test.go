@@ -15,31 +15,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Helper function to create a node object of any type (i.e. Database, Page or Block)
+// Helper function to create a node object of any type (i.e. Database,
+// Page or Block)
 func getRandomNodeObject(t *testing.T) *node.Node {
 	n := rand.Intn(3)
 	mockedRW := mocks.NewReaderWriter(t)
 
 	if n == 0 {
-		mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).Return(rw.DataIdentifier(uuid.New().String()), nil)
-		databaseNode, _ := node.CreateDatabaseNode(context.Background(), &notionapi.Database{}, mockedRW)
+		mockedRW.On("WriteDatabase", context.Background(), &notionapi.Database{}).
+			Return(rw.DataIdentifier(uuid.New().String()), nil)
+		databaseNode, _ := node.CreateDatabaseNode(context.Background(),
+			&notionapi.Database{}, mockedRW)
 		assert.NotNil(t, databaseNode)
 		return databaseNode
 	} else if n == 1 {
-		mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).Return(rw.DataIdentifier(uuid.New().String()), nil)
-		pageNode, _ := node.CreatePageNode(context.Background(), &notionapi.Page{}, mockedRW)
+		mockedRW.On("WritePage", context.Background(), &notionapi.Page{}).
+			Return(rw.DataIdentifier(uuid.New().String()), nil)
+		pageNode, _ := node.CreatePageNode(context.Background(),
+			&notionapi.Page{}, mockedRW)
 		assert.NotNil(t, pageNode)
 		return pageNode
 	}
 
-	mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).Return(rw.DataIdentifier(uuid.New().String()), nil)
-	blockNode, _ := node.CreateBlockNode(context.Background(), &notionapi.ParagraphBlock{}, mockedRW)
+	mockedRW.On("WriteBlock", context.Background(), &notionapi.ParagraphBlock{}).
+		Return(rw.DataIdentifier(uuid.New().String()), nil)
+	blockNode, _ := node.CreateBlockNode(context.Background(),
+		&notionapi.ParagraphBlock{}, mockedRW)
 	assert.NotNil(t, blockNode)
 	return blockNode
 }
 
 // helper function to 'childNodes' number of children to 'parentNode' node
-func addchilds(t *testing.T, childNodes int, parentNode *node.Node, uuidList *[]node.NodeID) {
+func addchilds(t *testing.T, childNodes int, parentNode *node.Node,
+	uuidList *[]node.NodeID) {
 	if parentNode == nil {
 		return
 	}
@@ -111,7 +119,8 @@ func TestChildIteration(t *testing.T) {
 // Helper function to buid tree in breadth first manner
 // This function would build the tree having atleast 'totalNodes' total nodes
 // atmost 'expectedChildren' childs
-func createTree(t *testing.T, totalNodes int, expectedChildren int, parentNode *node.Node, uuidList *[]node.NodeID) {
+func createTree(t *testing.T, totalNodes int, expectedChildren int,
+	parentNode *node.Node, uuidList *[]node.NodeID) {
 
 	if parentNode == nil {
 		return
@@ -186,7 +195,8 @@ func TestTreeIterator(t *testing.T) {
 				}
 			}
 
-			createTree(t, test.totalNodes, test.expectedChildren, rootNode, &expectedUUIDList)
+			createTree(t, test.totalNodes, test.expectedChildren, rootNode,
+				&expectedUUIDList)
 
 			treeIter := iterator.GetTreeIterator(rootNode)
 			actualUUIDList := []node.NodeID{}

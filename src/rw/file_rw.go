@@ -26,7 +26,8 @@ type FileReaderWriter struct {
 	blockDirPath    string
 }
 
-func GetFileReaderWriter(basePath string, createDirIfNotExist bool) (ReaderWriter, error) {
+func GetFileReaderWriter(basePath string,
+	createDirIfNotExist bool) (ReaderWriter, error) {
 	err := utils.CheckIfDirExists(basePath)
 	if err != nil {
 		if !createDirIfNotExist {
@@ -66,7 +67,8 @@ func GetFileReaderWriter(basePath string, createDirIfNotExist bool) (ReaderWrite
 	}, nil
 }
 
-func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{}, dirPath string) (DataIdentifier, error) {
+func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{},
+	dirPath string) (DataIdentifier, error) {
 	dataIdentifier := filepath.Join(dirPath, uuid.New().String())
 	dataBytes, err := json.Marshal(&v)
 	if err != nil {
@@ -81,7 +83,8 @@ func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{}, dirPat
 	return DataIdentifier(dataIdentifier), nil
 }
 
-func (rw *FileReaderWriter) readData(ctx context.Context, filePath string, v interface{}) error {
+func (rw *FileReaderWriter) readData(ctx context.Context, filePath string,
+	v interface{}) error {
 	databytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
@@ -95,7 +98,8 @@ func (rw *FileReaderWriter) readData(ctx context.Context, filePath string, v int
 	return nil
 }
 
-func (rw *FileReaderWriter) WriteDatabase(ctx context.Context, database *notionapi.Database) (DataIdentifier, error) {
+func (rw *FileReaderWriter) WriteDatabase(ctx context.Context,
+	database *notionapi.Database) (DataIdentifier, error) {
 	if database == nil {
 		return "", errors.New("nullptr received for database object")
 	}
@@ -103,7 +107,8 @@ func (rw *FileReaderWriter) WriteDatabase(ctx context.Context, database *notiona
 	return rw.writeData(ctx, database, rw.databaseDirPath)
 }
 
-func (rw *FileReaderWriter) ReadDatabase(ctx context.Context, identifier DataIdentifier) (*notionapi.Database, error) {
+func (rw *FileReaderWriter) ReadDatabase(ctx context.Context,
+	identifier DataIdentifier) (*notionapi.Database, error) {
 	database := &notionapi.Database{}
 	err := rw.readData(ctx, string(identifier), &database)
 	if err != nil {
@@ -112,7 +117,8 @@ func (rw *FileReaderWriter) ReadDatabase(ctx context.Context, identifier DataIde
 	return database, nil
 }
 
-func (rw *FileReaderWriter) WritePage(ctx context.Context, page *notionapi.Page) (DataIdentifier, error) {
+func (rw *FileReaderWriter) WritePage(ctx context.Context,
+	page *notionapi.Page) (DataIdentifier, error) {
 	if page == nil {
 		return "", errors.New("nullptr received for page object")
 	}
@@ -120,7 +126,8 @@ func (rw *FileReaderWriter) WritePage(ctx context.Context, page *notionapi.Page)
 	return rw.writeData(ctx, page, rw.pageDirPath)
 }
 
-func (rw *FileReaderWriter) ReadPage(ctx context.Context, identifier DataIdentifier) (*notionapi.Page, error) {
+func (rw *FileReaderWriter) ReadPage(ctx context.Context,
+	identifier DataIdentifier) (*notionapi.Page, error) {
 	page := &notionapi.Page{}
 	err := rw.readData(ctx, string(identifier), &page)
 	if err != nil {
@@ -129,7 +136,8 @@ func (rw *FileReaderWriter) ReadPage(ctx context.Context, identifier DataIdentif
 	return page, nil
 }
 
-func (rw *FileReaderWriter) WriteBlock(ctx context.Context, block notionapi.Block) (DataIdentifier, error) {
+func (rw *FileReaderWriter) WriteBlock(ctx context.Context,
+	block notionapi.Block) (DataIdentifier, error) {
 	if block == nil {
 		return "", errors.New("nullptr received for block object")
 	}
@@ -137,7 +145,8 @@ func (rw *FileReaderWriter) WriteBlock(ctx context.Context, block notionapi.Bloc
 	return rw.writeData(ctx, block, rw.blockDirPath)
 }
 
-func (rw *FileReaderWriter) ReadBlock(ctx context.Context, identifier DataIdentifier) (notionapi.Block, error) {
+func (rw *FileReaderWriter) ReadBlock(ctx context.Context,
+	identifier DataIdentifier) (notionapi.Block, error) {
 	databytes, err := os.ReadFile(string(identifier))
 	if err != nil {
 		return nil, err
