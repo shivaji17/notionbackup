@@ -30,6 +30,8 @@ const (
 	EMPTY_CURSOR                = notionapi.Cursor("")
 )
 
+var GenericError = errors.New(ERROR_STR)
+
 func mockWritePage(m *mocks.ReaderWriter, param interface{}, err error) {
 	m.On("WritePage", context.Background(), param).
 		Return(rw.DataIdentifier(uuid.New().String()), err)
@@ -46,15 +48,15 @@ func mockWriteBlock(m *mocks.ReaderWriter, param interface{}, err error) {
 }
 
 func insertIntoObjectIdMapping(objectMap map[string]map[string]bool,
-	keyId string, valueId string) {
-	if valueMap, found := objectMap[keyId]; found {
-		valueMap[valueId] = true
-		objectMap[keyId] = valueMap
+	parentId string, childId string) {
+	if valueMap, found := objectMap[parentId]; found {
+		valueMap[childId] = true
+		objectMap[parentId] = valueMap
 		return
 	}
 
-	objectMap[keyId] = map[string]bool{
-		valueId: true,
+	objectMap[parentId] = map[string]bool{
+		childId: true,
 	}
 }
 
@@ -72,6 +74,7 @@ type notionWrapperObject struct {
 	ParentType string
 }
 
+// Helper struct used for creating mocks.NotionClient on-mock functions
 type mocker struct {
 	isWorkspaceTree     bool
 	pageMap             map[string]*notionapi.Page
@@ -99,6 +102,8 @@ func getMocker(mockedNotionClient *mocks.NotionClient) *mocker {
 	}
 }
 
+// Reads the given file and loads the json data from file into notionTestData
+// object
 func (c *mocker) getNotionTestDataFromFile(t *testing.T,
 	filePath string) *notionTestData {
 
@@ -193,8 +198,7 @@ func (c *mocker) insertIntoAnyId2BlockListMap(
 	dataMap[id] = []notionapi.Block{object}
 }
 
-// This function will mock functions from mocks.NotionClient with required
-// parameters and return types
+// Creates a mapping of all possible relations for all types of objects
 func (c *mocker) createMappings(t *testing.T, filePath string) {
 
 	testData := c.getNotionTestDataFromFile(t, filePath)
@@ -264,6 +268,8 @@ func (c *mocker) createMappings(t *testing.T, filePath string) {
 	}
 }
 
+// This function will mock functions from mocks.NotionClient with required
+// parameters and return types
 func (c *mocker) mockNotionClientFunctions() {
 	cursor := notionapi.Cursor(uuid.NewString())
 	if c.isWorkspaceTree {
@@ -375,9 +381,11 @@ func (c *mocker) mockNotionClientFunctions() {
 
 }
 
+// ExportTreebuilder tester
 func TestExportTreeBuilder(t *testing.T) {
 	assert := assert.New(t)
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Get root node without building tree", func(t *testing.T) {
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mocks.NewNotionClient(t), mocks.NewReaderWriter(t),
@@ -388,6 +396,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while fetching all pages", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -396,14 +405,18 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetAllPages", context.Background(), notionapi.Cursor("")).
 			Return(
-				make([]notionapi.Page, 0), notionapi.Cursor(""), errors.New(ERROR_STR))
+				make([]notionapi.Page, 0), notionapi.Cursor(""), GenericError)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeRequest{})
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while fetching all databases", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -416,21 +429,25 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetAllDatabases", context.Background(), notionapi.Cursor("")).
 			Return(make(
-				[]notionapi.Database, 0), notionapi.Cursor(""), errors.New(ERROR_STR))
+				[]notionapi.Database, 0), notionapi.Cursor(""), GenericError)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeRequest{})
 
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while writing all pages", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWriter functions
-		mockWritePage(mockedRW, mock.Anything, errors.New(ERROR_STR))
+		mockWritePage(mockedRW, mock.Anything, GenericError)
 
 		// mock all required NotionClient functions
 		page := &notionapi.Page{Parent: notionapi.Parent{
@@ -445,14 +462,18 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while writing all databases", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWirter functions
-		mockWriteDatabase(mockedRW, mock.Anything, errors.New(ERROR_STR))
+		mockWriteDatabase(mockedRW, mock.Anything, GenericError)
 
 		// mock all required NotionClient functions
 		mockedNotionClient.On(
@@ -472,8 +493,12 @@ func TestExportTreeBuilder(t *testing.T) {
 			mockedNotionClient, mockedRW, &builder.TreeRequest{})
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Build tree for whole workspace", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -527,6 +552,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		assert.Equal(mockerObj.objectIdMapping, actualObjectMapping)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while fetching given page", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -534,7 +560,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		// mock all required NotionClient functions
 		mockedNotionClient.On("GetPageByID", context.Background(),
 			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624")).
-			Return(nil, errors.New(ERROR_STR))
+			Return(nil, GenericError)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -543,14 +569,18 @@ func TestExportTreeBuilder(t *testing.T) {
 			})
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while writing page for given page", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWriter functions
-		mockWritePage(mockedRW, mock.Anything, errors.New(ERROR_STR))
+		mockWritePage(mockedRW, mock.Anything, GenericError)
 
 		// mock all required NotionClient functions
 		mockedNotionClient.On("GetPageByID", context.Background(),
@@ -565,8 +595,12 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while fetching page blocks for given page", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -585,7 +619,7 @@ func TestExportTreeBuilder(t *testing.T) {
 			"GetPageBlocks", context.Background(),
 			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
 			EMPTY_CURSOR).
-			Return([]notionapi.Block{}, EMPTY_CURSOR, errors.New(ERROR_STR))
+			Return([]notionapi.Block{}, EMPTY_CURSOR, GenericError)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -594,6 +628,9 @@ func TestExportTreeBuilder(t *testing.T) {
 			})
 
 		err := treeBuilder.BuildTree(context.Background())
+		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
 		assert.NotNil(err)
 	})
 
@@ -605,7 +642,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetDatabaseByID", context.Background(),
 			notionclient.DatabaseID("36dac6ee-76e9-4c99-94a9-b0989be3f624")).
-			Return(nil, errors.New(ERROR_STR))
+			Return(nil, GenericError)
 
 		treeBuilder := builder.GetExportTreebuilder(
 			context.Background(), mockedNotionClient, mockedRW,
@@ -615,14 +652,18 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while writing database with given database", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWriter functions
-		mockWriteDatabase(mockedRW, mock.Anything, errors.New(ERROR_STR))
+		mockWriteDatabase(mockedRW, mock.Anything, GenericError)
 
 		// mock all required NotionClient functions
 		mockedNotionClient.On(
@@ -638,8 +679,12 @@ func TestExportTreeBuilder(t *testing.T) {
 			})
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while fetching page for given database", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -658,7 +703,7 @@ func TestExportTreeBuilder(t *testing.T) {
 			"GetDatabasePages", context.Background(),
 			notionclient.DatabaseID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
 			EMPTY_CURSOR).
-			Return([]notionapi.Page{}, EMPTY_CURSOR, errors.New(ERROR_STR))
+			Return([]notionapi.Page{}, EMPTY_CURSOR, GenericError)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -668,8 +713,102 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("Error while writing block", func(t *testing.T) {
+		mockedRW := mocks.NewReaderWriter(t)
+		mockedNotionClient := mocks.NewNotionClient(t)
+
+		// Mock ReaderWriter functions
+		mockWritePage(mockedRW, mock.Anything, nil)
+		mockWriteBlock(mockedRW, mock.Anything, GenericError)
+
+		// mock all required NotionClient functions
+		mockedNotionClient.On("GetPageByID", context.Background(),
+			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624")).
+			Return(&notionapi.Page{
+				ID: notionapi.ObjectID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
+			}, nil)
+
+		blockId := uuid.NewString()
+		block := &notionapi.ColumnBlock{
+			BasicBlock: notionapi.BasicBlock{
+				ID:          notionapi.BlockID(blockId),
+				HasChildren: true,
+			},
+		}
+
+		mockedNotionClient.On(
+			"GetPageBlocks", context.Background(),
+			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
+			EMPTY_CURSOR).
+			Return([]notionapi.Block{block}, EMPTY_CURSOR, nil)
+
+		treeBuilder := builder.GetExportTreebuilder(context.Background(),
+			mockedNotionClient, mockedRW,
+			&builder.TreeRequest{
+				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
+			})
+
+		err := treeBuilder.BuildTree(context.Background())
+		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("Error while fetching blocks of given blocks", func(t *testing.T) {
+		mockedRW := mocks.NewReaderWriter(t)
+		mockedNotionClient := mocks.NewNotionClient(t)
+		mockWriteBlock(mockedRW, mock.Anything, nil)
+		// Mock ReaderWriter functions
+		mockWritePage(mockedRW, mock.Anything, nil)
+
+		// mock all required NotionClient functions
+		mockedNotionClient.On("GetPageByID", context.Background(),
+			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624")).
+			Return(&notionapi.Page{
+				ID: notionapi.ObjectID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
+			}, nil)
+
+		blockId := uuid.NewString()
+		block := &notionapi.ColumnBlock{
+			BasicBlock: notionapi.BasicBlock{
+				ID:          notionapi.BlockID(blockId),
+				HasChildren: true,
+			},
+		}
+
+		mockedNotionClient.On(
+			"GetPageBlocks", context.Background(),
+			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
+			EMPTY_CURSOR).
+			Return([]notionapi.Block{block}, EMPTY_CURSOR, nil)
+
+		mockedNotionClient.On(
+			"GetChildBlocksOfBlock", context.Background(),
+			notionclient.BlockID(blockId), EMPTY_CURSOR).
+			Return([]notionapi.Block{}, EMPTY_CURSOR, GenericError)
+
+		treeBuilder := builder.GetExportTreebuilder(context.Background(),
+			mockedNotionClient, mockedRW,
+			&builder.TreeRequest{
+				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
+			})
+
+		err := treeBuilder.BuildTree(context.Background())
+		assert.NotNil(err)
+		rootNode, err := treeBuilder.GetRootNode()
+		assert.Nil(rootNode)
+		assert.NotNil(err)
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Build tree for given page and database", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)

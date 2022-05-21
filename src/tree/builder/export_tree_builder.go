@@ -401,6 +401,8 @@ func (builderObj *ExportTreeBuilder) buildTreeForWorkspace(
 	return nil
 }
 
+// This function will build the tree for given PageIds and DatabaseIds and its
+// children
 func (builderObj *ExportTreeBuilder) buildTreeForGivenObjectIds(
 	ctx context.Context) error {
 	rootNode := node.CreateRootNode()
@@ -435,7 +437,7 @@ func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) error {
 	}
 
 	// If no PageIDs and DatabaseIDs provided, build tree with all pages and
-	// databases which user has access
+	// databases from workspace which user has access
 	if len(builderObj.request.DatabaseIdList) == 0 &&
 		len(builderObj.request.PageIdList) == 0 {
 		builderObj.err = builderObj.buildTreeForWorkspace(ctx)
