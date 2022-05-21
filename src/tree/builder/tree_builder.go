@@ -7,7 +7,7 @@ import (
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 )
 
-type TreeRequest struct {
+type TreeBuilderRequest struct {
 	PageIdList     []string
 	DatabaseIdList []string
 }

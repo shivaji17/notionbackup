@@ -20,10 +20,11 @@ const (
 )
 
 type FileReaderWriter struct {
-	baseDirPath     string
-	databaseDirPath string
-	pageDirPath     string
-	blockDirPath    string
+	baseDirPath        string
+	databaseDirPath    string
+	pageDirPath        string
+	blockDirPath       string
+	dataIdentifierList []DataIdentifier
 }
 
 func GetFileReaderWriter(basePath string,
@@ -60,10 +61,11 @@ func GetFileReaderWriter(basePath string,
 	}
 
 	return &FileReaderWriter{
-		baseDirPath:     basePath,
-		databaseDirPath: databaseDirPath,
-		pageDirPath:     pageDirPath,
-		blockDirPath:    blockDirPath,
+		baseDirPath:        basePath,
+		databaseDirPath:    databaseDirPath,
+		pageDirPath:        pageDirPath,
+		blockDirPath:       blockDirPath,
+		dataIdentifierList: make([]DataIdentifier, 0),
 	}, nil
 }
 
@@ -80,6 +82,7 @@ func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{},
 		return "", err
 	}
 
+	rw.dataIdentifierList = append(rw.dataIdentifierList, DataIdentifier(dataIdentifier))
 	return DataIdentifier(dataIdentifier), nil
 }
 
@@ -159,4 +162,18 @@ func (rw *FileReaderWriter) ReadBlock(ctx context.Context,
 	}
 
 	return utils.DecodeBlockObject(response)
+}
+
+func (rw *FileReaderWriter) CleanUp(ctx context.Context) error {
+	var externalErr error
+	externalErr = nil
+
+	for _, identifier := range rw.dataIdentifierList {
+		err := os.Remove(identifier.String())
+		if err != nil {
+			externalErr = err
+		}
+	}
+
+	return externalErr
 }

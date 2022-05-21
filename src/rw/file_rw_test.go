@@ -468,3 +468,164 @@ func TestReadBlock(t *testing.T) {
 		})
 	}
 }
+
+func TestCleanUp(t *testing.T) {
+	database := &notionapi.Database{
+		Object: notionapi.ObjectTypeDatabase,
+		ID:     "some_id",
+		Title: []notionapi.RichText{
+			{
+				Type:        notionapi.ObjectTypeText,
+				Text:        notionapi.Text{Content: "Test Database"},
+				Annotations: &notionapi.Annotations{Color: "default"},
+				PlainText:   "Test Database",
+				Href:        "",
+			},
+		},
+	}
+
+	page := &notionapi.Page{
+		Object: notionapi.ObjectTypePage,
+		ID:     "some_id",
+		Parent: notionapi.Parent{
+			Type:       notionapi.ParentTypeDatabaseID,
+			DatabaseID: "some_id",
+		},
+		Archived: false,
+		URL:      "some_url",
+		Properties: notionapi.Properties{
+			"Tags": &notionapi.MultiSelectProperty{
+				ID:   ";s|V",
+				Type: "multi_select",
+				MultiSelect: []notionapi.Option{
+					{
+						ID:    "some_id",
+						Name:  "tag",
+						Color: "blue",
+					},
+				},
+			},
+			"Some another column": &notionapi.PeopleProperty{
+				ID:   "rJt\\",
+				Type: "people",
+				People: []notionapi.User{
+					{
+						Object:    "user",
+						ID:        "some_id",
+						Name:      "some name",
+						AvatarURL: "some.url",
+						Type:      "person",
+						Person: &notionapi.Person{
+							Email: "some@email.com",
+						},
+					},
+				},
+			},
+			"SomeColumn": &notionapi.RichTextProperty{
+				ID:   "~j_@",
+				Type: "rich_text",
+				RichText: []notionapi.RichText{
+					{
+						Type: "text",
+						Text: notionapi.Text{
+							Content: "some text",
+						},
+						Annotations: &notionapi.Annotations{
+							Color: "default",
+						},
+						PlainText: "some text",
+					},
+				},
+			},
+			"Name": &notionapi.TitleProperty{
+				ID:   "title",
+				Type: "title",
+				Title: []notionapi.RichText{
+					{
+						Type: "text",
+						Text: notionapi.Text{
+							Content: "Hello",
+						},
+						Annotations: &notionapi.Annotations{
+							Color: "default",
+						},
+						PlainText: "Hello",
+					},
+				},
+			},
+			"RollupArray": &notionapi.RollupProperty{
+				ID:   "abcd",
+				Type: "rollup",
+				Rollup: notionapi.Rollup{
+					Type: "array",
+					Array: notionapi.PropertyArray{
+						&notionapi.NumberProperty{
+							Type:   "number",
+							Number: 42.2,
+						},
+						&notionapi.NumberProperty{
+							Type:   "number",
+							Number: 56,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	block := &notionapi.ChildPageBlock{
+		BasicBlock: notionapi.BasicBlock{
+			Object:      notionapi.ObjectTypeBlock,
+			ID:          "some_id",
+			Type:        notionapi.BlockTypeChildPage,
+			HasChildren: true,
+		},
+		ChildPage: struct {
+			Title string `json:"title"`
+		}{
+			Title: "Hello",
+		},
+	}
+
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "CleanUp successful",
+			wantErr: false,
+		},
+		{
+			name:    "CleanUp failed",
+			wantErr: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+			assert.Nil(t, err)
+			id1, err := filerw.WriteBlock(context.Background(), block)
+			assert.NotEmpty(t, id1)
+			assert.Nil(t, err)
+			id2, err := filerw.WriteDatabase(context.Background(), database)
+			assert.NotEmpty(t, id2)
+			assert.Nil(t, err)
+			id3, err := filerw.WritePage(context.Background(), page)
+			assert.NotEmpty(t, id3)
+			assert.Nil(t, err)
+
+			if test.wantErr {
+				// Explicitly delete one file
+				err := os.Remove(id2.String())
+				assert.Nil(t, err)
+				err = filerw.CleanUp(context.Background())
+				assert.NotNil(t, err)
+			} else {
+				err = filerw.CleanUp(context.Background())
+				assert.Nil(t, err)
+			}
+		})
+	}
+
+}

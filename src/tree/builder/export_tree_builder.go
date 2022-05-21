@@ -28,12 +28,12 @@ type ExportTreeBuilder struct {
 	databaseId2DatabaseNodeMap map[string]*node.Node
 	databaseId2PageListMap     map[string][]string
 	nodeStack                  stack
-	request                    *TreeRequest
+	request                    *TreeBuilderRequest
 }
 
 func GetExportTreebuilder(ctx context.Context,
 	notionClient notionclient.NotionClient, rw rw.ReaderWriter,
-	request *TreeRequest) TreeBuilder {
+	request *TreeBuilderRequest) TreeBuilder {
 	return &ExportTreeBuilder{
 		notionClient:               notionClient,
 		rw:                         rw,
@@ -443,6 +443,10 @@ func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) error {
 		builderObj.err = builderObj.buildTreeForWorkspace(ctx)
 	} else {
 		builderObj.err = builderObj.buildTreeForGivenObjectIds(ctx)
+	}
+
+	if builderObj.err != nil && builderObj.rw.CleanUp(ctx) != nil {
+		// Add logging or printing statement
 	}
 
 	return builderObj.err
