@@ -44,7 +44,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 	assert.NotNil(rootNode)
 	assert.Equal(node.NodeID(uuid.Nil.String()), rootNode.GetID())
 	assert.Equal(node.NodeType(node.ROOT), rootNode.GetNodeType())
-	assert.Empty(rootNode.GetIdentifier())
+	assert.Empty(rootNode.GetStorageIdentifier())
 	assert.False(rootNode.HasChildNode())
 	assert.Nil(rootNode.GetChildNode())
 
@@ -91,7 +91,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				expectedIdentifier := test.storageIdentifier
 				// Assert DatabaseNode
 				assert.NotNil(databaseNode)
-				assert.Equal(expectedIdentifier, databaseNode.GetIdentifier())
+				assert.Equal(expectedIdentifier, databaseNode.GetStorageIdentifier())
 				assert.Equal(node.NodeType(node.DATABASE), databaseNode.GetNodeType())
 				assert.NotEmpty(databaseNode.GetID())
 				assert.Equal(test.notionObjectId, databaseNode.GetNotionObjectId())
@@ -102,7 +102,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 
 				// Assert PageNode
 				assert.NotNil(pageNode)
-				assert.Equal(expectedIdentifier, pageNode.GetIdentifier())
+				assert.Equal(expectedIdentifier, pageNode.GetStorageIdentifier())
 				assert.Equal(node.NodeType(node.PAGE), pageNode.GetNodeType())
 				assert.NotEmpty(pageNode.GetID())
 				assert.Equal(test.notionObjectId, pageNode.GetNotionObjectId())
@@ -113,7 +113,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 
 				// Assert BlockNode
 				assert.NotNil(blockNode)
-				assert.Equal(expectedIdentifier, blockNode.GetIdentifier())
+				assert.Equal(expectedIdentifier, blockNode.GetStorageIdentifier())
 				assert.Equal(node.NodeType(node.BLOCK), blockNode.GetNodeType())
 				assert.NotEmpty(blockNode.GetID())
 				assert.Equal(test.notionObjectId, blockNode.GetNotionObjectId())

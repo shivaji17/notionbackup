@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 )
 
 type DataIdentifier string
@@ -19,5 +20,6 @@ type ReaderWriter interface {
 	ReadPage(context.Context, DataIdentifier) (*notionapi.Page, error)
 	WriteBlock(context.Context, notionapi.Block) (DataIdentifier, error)
 	ReadBlock(context.Context, DataIdentifier) (notionapi.Block, error)
+	WriteMetaData(context.Context, *metadata.MetaData) error
 	CleanUp(context.Context) error
 }

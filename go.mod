@@ -6,4 +6,5 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jomei/notionapi v1.8.3
 	github.com/stretchr/testify v1.7.1
+	google.golang.org/protobuf v1.28.0
 )

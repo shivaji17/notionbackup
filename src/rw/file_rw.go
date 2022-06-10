@@ -9,14 +9,18 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
-	DATABASE_DIR_NAME = "databases"
-	PAGE_DIR_NAME     = "pages"
-	BLOCK_DIR_NAME    = "blocks"
-	FILE_PERM         = 0400
+	DATABASE_DIR_NAME  = "databases"
+	PAGE_DIR_NAME      = "pages"
+	BLOCK_DIR_NAME     = "blocks"
+	OBJECT_FILE_PERM   = 0400
+	METADATA_FILE_PERM = 0644
+	METADATA_FILE_NAME = "metadata.pb"
 )
 
 type FileReaderWriter struct {
@@ -77,12 +81,13 @@ func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{},
 		return "", err
 	}
 
-	err = os.WriteFile(dataIdentifier, dataBytes, FILE_PERM)
+	err = os.WriteFile(dataIdentifier, dataBytes, OBJECT_FILE_PERM)
 	if err != nil {
 		return "", err
 	}
 
-	rw.dataIdentifierList = append(rw.dataIdentifierList, DataIdentifier(dataIdentifier))
+	rw.dataIdentifierList = append(rw.dataIdentifierList,
+		DataIdentifier(dataIdentifier))
 	return DataIdentifier(dataIdentifier), nil
 }
 
@@ -176,4 +181,20 @@ func (rw *FileReaderWriter) CleanUp(ctx context.Context) error {
 	}
 
 	return externalErr
+}
+
+func (rw *FileReaderWriter) WriteMetaData(ctx context.Context,
+	metadata *metadata.MetaData) error {
+	dataBytes, err := proto.Marshal(metadata)
+	if err != nil {
+		return err
+	}
+
+	path := filepath.Join(rw.baseDirPath, METADATA_FILE_NAME)
+	err = os.WriteFile(path, dataBytes, METADATA_FILE_PERM)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

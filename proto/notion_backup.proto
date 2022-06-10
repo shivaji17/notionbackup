@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = "./src/metadata";
+
+enum NotionObjectType {
+  UNKNOWN = 0;
+  ROOT = 1;
+	PAGE = 2;
+	DATABASE = 3;
+	BLOCK = 4;
+}
+
+message MetaData {
+  // Map for storing NotionObject with uuid as a key and NotionObject as a value
+  map<string, NotionObject> notion_object_map = 1;
+
+  // Map stores the mapping of each NotionObject UUID to different NotionObject
+  // UUIDs
+  map<string, ChildrenNotionObjectUuids> object_mapping = 2;
+}
+
+// List of UUIDs of different NotionObject
+message ChildrenNotionObjectUuids {
+  repeated string children_uuid_list = 1;
+}
+
+message NotionObject {
+  // Unique identifier of the object in notionbackup module
+  string uuid = 1;
+
+  // Storage identifier of the object with which object can be retrived from
+  // database or any storage system where notion objects are stored
+  string storage_identifier = 2;
+
+  // Notion object type
+  NotionObjectType type = 3;
+
+  // ID of the notion object. This ID belongs to ID created by Notion App
+  string notion_object_id = 4;
+}

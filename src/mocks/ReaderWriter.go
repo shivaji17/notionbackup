@@ -5,8 +5,10 @@ package mocks
 import (
 	context "context"
 
-	notionapi "github.com/jomei/notionapi"
+	metadata "github.com/sawantshivaji1997/notionbackup/src/metadata"
 	mock "github.com/stretchr/testify/mock"
+
+	notionapi "github.com/jomei/notionapi"
 
 	rw "github.com/sawantshivaji1997/notionbackup/src/rw"
 
@@ -141,6 +143,20 @@ func (_m *ReaderWriter) WriteDatabase(_a0 context.Context, _a1 *notionapi.Databa
 	}
 
 	return r0, r1
+}
+
+// WriteMetaData provides a mock function with given fields: _a0, _a1
+func (_m *ReaderWriter) WriteMetaData(_a0 context.Context, _a1 *metadata.MetaData) error {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *metadata.MetaData) error); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // WritePage provides a mock function with given fields: _a0, _a1

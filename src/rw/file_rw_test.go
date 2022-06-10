@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 	"github.com/stretchr/testify/assert"
 )
@@ -627,5 +628,17 @@ func TestCleanUp(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestWriteMetaData(t *testing.T) {
+	t.Run("File write successful", func(t *testing.T) {
+		filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+		assert.NotNil(t, filerw)
+		assert.Nil(t, err)
+
+		err = filerw.WriteMetaData(context.Background(), &metadata.MetaData{})
+		assert.Nil(t, err)
+	})
+
+	// TODO: Add negative test cases
 }

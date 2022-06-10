@@ -12,6 +12,14 @@ type NodeID string
 type NodeType int
 type FilePath string
 
+func (id NodeID) String() string {
+	return string(id)
+}
+
+func (path FilePath) String() string {
+	return string(path)
+}
+
 const (
 	UNKNOWN  NodeType = 0
 	ROOT              = 1
@@ -106,7 +114,7 @@ func (nodeObj *Node) GetNodeType() NodeType {
 	return nodeObj.nodeType
 }
 
-func (nodeObj *Node) GetIdentifier() rw.DataIdentifier {
+func (nodeObj *Node) GetStorageIdentifier() rw.DataIdentifier {
 	return nodeObj.storageIdentifier
 }
 
