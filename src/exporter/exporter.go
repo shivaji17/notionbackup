@@ -2,9 +2,7 @@ package exporter
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
@@ -91,9 +89,6 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 				}
 		}
 	}
-
-	j, _ := json.MarshalIndent(metadataObj, "", "  ")
-	fmt.Printf("%s", j)
 
 	return rw.WriteMetaData(ctx, metadataObj)
 }
