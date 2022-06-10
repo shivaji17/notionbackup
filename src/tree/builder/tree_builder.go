@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/sawantshivaji1997/notionbackup/src/tree"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 )
 
@@ -12,8 +13,7 @@ type TreeBuilderRequest struct {
 	DatabaseIdList []string
 }
 type TreeBuilder interface {
-	BuildTree(context.Context) error
-	GetRootNode() (*node.Node, error)
+	BuildTree(context.Context) (*tree.Tree, error)
 }
 
 type stackContent struct {

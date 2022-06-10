@@ -7,6 +7,7 @@ import (
 	"github.com/jomei/notionapi"
 	"github.com/sawantshivaji1997/notionbackup/src/notionclient"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
+	"github.com/sawantshivaji1997/notionbackup/src/tree"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 )
 
@@ -431,9 +432,12 @@ func (builderObj *ExportTreeBuilder) buildTreeForGivenObjectIds(
 }
 
 // Build the tree for the given config
-func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) error {
+func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) (*tree.Tree,
+	error) {
 	if builderObj.rootNode != nil {
-		return nil
+		return &tree.Tree{
+			RootNode: builderObj.rootNode,
+		}, nil
 	}
 
 	// If no PageIDs and DatabaseIDs provided, build tree with all pages and
@@ -445,14 +449,15 @@ func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) error {
 		builderObj.err = builderObj.buildTreeForGivenObjectIds(ctx)
 	}
 
-	if builderObj.err != nil && builderObj.rw.CleanUp(ctx) != nil {
-		// Add logging or printing statement
+	if builderObj.err != nil {
+		if builderObj.rw.CleanUp(ctx) != nil {
+			// Add logging or printing statement
+		}
+
+		return nil, builderObj.err
 	}
 
-	return builderObj.err
-}
-
-// Get the root node of the tree
-func (builderObj *ExportTreeBuilder) GetRootNode() (*node.Node, error) {
-	return builderObj.rootNode, builderObj.err
+	return &tree.Tree{
+		RootNode: builderObj.rootNode,
+	}, nil
 }

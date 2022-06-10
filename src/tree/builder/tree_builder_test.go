@@ -386,17 +386,6 @@ func TestExportTreeBuilder(t *testing.T) {
 	assert := assert.New(t)
 
 	//////////////////////////////////////////////////////////////////////////////
-	t.Run("Get root node without building tree", func(t *testing.T) {
-		treeBuilder := builder.GetExportTreebuilder(context.Background(),
-			mocks.NewNotionClient(t), mocks.NewReaderWriter(t),
-			&builder.TreeBuilderRequest{})
-
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
-	})
-
-	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error while fetching all pages", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedNotionClient := mocks.NewNotionClient(t)
@@ -410,11 +399,9 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -437,11 +424,9 @@ func TestExportTreeBuilder(t *testing.T) {
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -464,11 +449,9 @@ func TestExportTreeBuilder(t *testing.T) {
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -496,11 +479,9 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -519,24 +500,22 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockerObj.mockNotionClientFunctions()
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.Nil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.NotNil(rootNode)
-		assert.Nil(err)
+		assert.NotNil(tree)
 
 		actualObjectMapping := make(map[string]map[string]bool, 0)
-		childIter := iterator.GetChildIterator(rootNode)
+		childIter := iterator.GetChildIterator(tree.RootNode)
 		for {
 			obj, err := childIter.Next()
 			if err == iterator.Done {
 				break
 			}
 			insertIntoObjectIdMapping(actualObjectMapping,
-				rootNode.GetNotionObjectId(), obj.GetNotionObjectId())
+				tree.RootNode.GetNotionObjectId(), obj.GetNotionObjectId())
 		}
 
-		treeIter := iterator.GetTreeIterator(rootNode)
+		treeIter := iterator.GetTreeIterator(tree.RootNode)
 		for {
 			obj, err := treeIter.Next()
 			if err == iterator.Done {
@@ -574,11 +553,9 @@ func TestExportTreeBuilder(t *testing.T) {
 			&builder.TreeBuilderRequest{
 				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -601,11 +578,9 @@ func TestExportTreeBuilder(t *testing.T) {
 				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -636,11 +611,9 @@ func TestExportTreeBuilder(t *testing.T) {
 				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -662,11 +635,9 @@ func TestExportTreeBuilder(t *testing.T) {
 				DatabaseIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -690,11 +661,9 @@ func TestExportTreeBuilder(t *testing.T) {
 			&builder.TreeBuilderRequest{
 				DatabaseIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -725,11 +694,9 @@ func TestExportTreeBuilder(t *testing.T) {
 				DatabaseIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -769,11 +736,9 @@ func TestExportTreeBuilder(t *testing.T) {
 				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -818,11 +783,9 @@ func TestExportTreeBuilder(t *testing.T) {
 				PageIdList: []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.NotNil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.Nil(rootNode)
-		assert.NotNil(err)
+		assert.Nil(tree)
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -846,26 +809,26 @@ func TestExportTreeBuilder(t *testing.T) {
 				DatabaseIdList: []string{"db770044-b760-402e-862a-50fef8d6b5d9"},
 			})
 
-		err := treeBuilder.BuildTree(context.Background())
+		tree, err := treeBuilder.BuildTree(context.Background())
 		assert.Nil(err)
-		err = treeBuilder.BuildTree(context.Background())
+		assert.NotNil(tree)
+		tree2, err := treeBuilder.BuildTree(context.Background())
 		assert.Nil(err)
-		rootNode, err := treeBuilder.GetRootNode()
-		assert.NotNil(rootNode)
-		assert.Nil(err)
+		assert.NotNil(tree2)
+		assert.Equal(tree, tree2)
 
 		actualObjectMapping := make(map[string]map[string]bool, 0)
-		childIter := iterator.GetChildIterator(rootNode)
+		childIter := iterator.GetChildIterator(tree.RootNode)
 		for {
 			obj, err := childIter.Next()
 			if err == iterator.Done {
 				break
 			}
 			insertIntoObjectIdMapping(actualObjectMapping,
-				rootNode.GetNotionObjectId(), obj.GetNotionObjectId())
+				tree.RootNode.GetNotionObjectId(), obj.GetNotionObjectId())
 		}
 
-		treeIter := iterator.GetTreeIterator(rootNode)
+		treeIter := iterator.GetTreeIterator(tree.RootNode)
 		for {
 			obj, err := treeIter.Next()
 			if err == iterator.Done {
