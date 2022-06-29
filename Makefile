@@ -3,7 +3,7 @@ SRC_DIR := $(ROOT_DIR)/src
 PROTO_DIR := $(ROOT_DIR)/proto
 PROTO_FILE := $(PROTO_DIR)/notion_backup.proto
 PROTOC := protoc
-BINARY := notion_backup
+BINARY := notionbackup
 
 .PHONY: test
 test:
