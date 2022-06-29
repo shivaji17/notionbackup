@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+notion_backup
+bin/*
 
 # Test binary, built with `go test -c`
 *.test
