@@ -9,17 +9,18 @@ import (
 	"github.com/jomei/notionapi"
 	"github.com/rs/zerolog"
 	"github.com/sawantshivaji1997/notionbackup/src/exporter"
+	"github.com/sawantshivaji1997/notionbackup/src/logging"
 	"github.com/sawantshivaji1997/notionbackup/src/notionclient"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/builder"
 )
 
-type OperationType int
+type OperationType string
 
 const (
-	UNKNOWN OperationType = 0
-	BACKUP  OperationType = 1
-	RESTORE OperationType = 2
+	UNKNOWN OperationType = "UNKNOWN"
+	BACKUP  OperationType = "BACKUP"
+	RESTORE OperationType = "RESTORE"
 )
 
 type Config struct {
@@ -68,14 +69,14 @@ func (c *Config) validateBackupConfig() error {
 	return nil
 }
 
-func (c *Config) executeBackup(ctx context.Context) error {
+func (c *Config) executeBackup(ctx context.Context) {
 	ntnClient := notionclient.GetNotionApiClient(ctx, notionapi.Token(c.Token),
 		notionapi.NewClient)
 	log := zerolog.Ctx(ctx)
 	readerWriter, err := rw.GetFileReaderWriter(ctx, c.Dir, c.Create_Dir)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create ReaderWriter instance")
-		return err
+		return
 	}
 
 	treeBuilderReq := &builder.TreeBuilderRequest{
@@ -88,7 +89,7 @@ func (c *Config) executeBackup(ctx context.Context) error {
 	tree, err := treeBuilder.BuildTree(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to build the notion object tree")
-		return err
+		return
 	}
 
 	log.Info().Msg("Creating metadata of the exported data")
@@ -107,22 +108,23 @@ func (c *Config) executeBackup(ctx context.Context) error {
 	} else {
 		log.Info().Msg("Backup successful")
 	}
-
-	return err
 }
 
-func (c *Config) Execute(ctx context.Context) error {
+func (c *Config) Execute(ctx context.Context) {
 	log := zerolog.Ctx(ctx)
 	if c.Operation_Type == BACKUP {
 		log.Info().Msg("Starting backup operation")
 
 		err := c.validateBackupConfig()
 		if err != nil {
-			return err
+			log.Error().Err(err).Msg(logging.ValidationErr)
+			return
 		}
 
-		return c.executeBackup(ctx)
+		c.executeBackup(ctx)
+		return
 	}
 
-	return fmt.Errorf("unknown operation type provided")
+	err := fmt.Errorf("unknown operation type provided: %s", c.Operation_Type)
+	log.Error().Err(err).Msg(logging.ValidationErr)
 }

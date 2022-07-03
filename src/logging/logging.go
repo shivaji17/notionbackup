@@ -1,6 +1,7 @@
 package logging
 
 const (
+	ValidationErr         = "Validation failure"
 	PageUUID              = "Page UUID"
 	DatabaseUUID          = "Database UUID"
 	BlockUUID             = "Block UUID"

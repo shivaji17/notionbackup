@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -57,5 +53,6 @@ func TakeLocalBackup(cmd *cobra.Command, args []string) error {
 
 	ctx := log.WithContext(context.Background())
 
-	return cfg.Execute(ctx)
+	cfg.Execute(ctx)
+	return nil
 }
