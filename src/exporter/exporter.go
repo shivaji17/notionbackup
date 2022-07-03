@@ -40,7 +40,7 @@ func GetChildrenUuidList(nodeObj *node.Node) []string {
 	childrenUuidList := []string{}
 	for {
 		childObj, err := iter.Next()
-		if err == iterator.Done {
+		if err == iterator.ErrDone {
 			break
 		}
 		childrenUuidList = append(childrenUuidList, childObj.GetID().String())
@@ -73,7 +73,7 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 	iter := iterator.GetTreeIterator(tree.RootNode)
 	for {
 		nodeObj, err := iter.Next()
-		if err == iterator.Done {
+		if err == iterator.ErrDone {
 			break
 		}
 

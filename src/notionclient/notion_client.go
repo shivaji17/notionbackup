@@ -21,9 +21,9 @@ type ObjectType int
 
 const (
 	UNKNOWN  ObjectType = 0
-	DATABASE            = 1
-	PAGE                = 2
-	BLOCK               = 3
+	DATABASE ObjectType = 1
+	PAGE     ObjectType = 2
+	BLOCK    ObjectType = 3
 )
 
 type (
@@ -200,9 +200,7 @@ func (c *NotionApiClient) GetDatabasePages(ctx context.Context,
 	}
 
 	pages := []notionapi.Page{}
-	for _, page := range resp.Results {
-		pages = append(pages, page)
-	}
+	pages = append(pages, resp.Results...)
 
 	var newCursor notionapi.Cursor
 	if resp.HasMore {

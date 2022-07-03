@@ -19,5 +19,5 @@ func (iter *ParentIterator) Next() (*node.Node, error) {
 		return temp, nil
 	}
 
-	return nil, Done
+	return nil, ErrDone
 }

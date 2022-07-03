@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 var notionToken string
@@ -83,7 +83,8 @@ func getLogger() (zerolog.Logger, error) {
 		Out:        out,
 		TimeFormat: time.RFC822,
 	}
-	if !terminal.IsTerminal(int(out.Fd())) {
+
+	if !term.IsTerminal(int(out.Fd())) {
 		writer.NoColor = true
 	}
 	log := zerolog.New(writer).

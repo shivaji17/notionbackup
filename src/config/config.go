@@ -18,8 +18,8 @@ type OperationType int
 
 const (
 	UNKNOWN OperationType = 0
-	BACKUP                = 1
-	RESTORE               = 2
+	BACKUP  OperationType = 1
+	RESTORE OperationType = 2
 )
 
 type Config struct {

@@ -26,12 +26,12 @@ func (iter *ChildIterator) Next() (*node.Node, error) {
 		temp := iter.currNode
 
 		if temp == nil {
-			return nil, Done
+			return nil, ErrDone
 		}
 
 		iter.currNode = iter.currNode.GetSiblingNode()
 		return temp, nil
 	}
 
-	return nil, Done
+	return nil, ErrDone
 }

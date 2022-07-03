@@ -103,7 +103,7 @@ func TestChildIteration(t *testing.T) {
 			for {
 				obj, err := iter.Next()
 
-				if err == iterator.Done {
+				if err == iterator.ErrDone {
 					break
 				}
 
@@ -203,7 +203,7 @@ func TestTreeIterator(t *testing.T) {
 			for {
 				obj, err := treeIter.Next()
 
-				if err == iterator.Done {
+				if err == iterator.ErrDone {
 					break
 				}
 				actualUUIDList = append(actualUUIDList, obj.GetID())
@@ -261,7 +261,7 @@ func TestParentIterator(t *testing.T) {
 			for {
 				obj, err := iter.Next()
 
-				if err == iterator.Done {
+				if err == iterator.ErrDone {
 					break
 				}
 

@@ -398,7 +398,7 @@ func (builderObj *ExportTreeBuilder) buildTreeUntilStackEmpty(
 	ctx context.Context) error {
 	for {
 		object, err := builderObj.nodeStack.Pop()
-		if err == stackEmpty {
+		if err == errStackEmpty {
 			break
 		}
 

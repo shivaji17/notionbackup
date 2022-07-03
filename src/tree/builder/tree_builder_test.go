@@ -30,7 +30,7 @@ const (
 	EMPTY_CURSOR                = notionapi.Cursor("")
 )
 
-var GenericError = fmt.Errorf(ERROR_STR)
+var errGeneric = fmt.Errorf(ERROR_STR)
 
 func mockWritePage(m *mocks.ReaderWriter, param interface{}, err error) {
 	m.On("WritePage", context.Background(), param).
@@ -395,7 +395,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetAllPages", context.Background(), notionapi.Cursor("")).
 			Return(
-				make([]notionapi.Page, 0), notionapi.Cursor(""), GenericError)
+				make([]notionapi.Page, 0), notionapi.Cursor(""), errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
@@ -419,7 +419,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetAllDatabases", context.Background(), notionapi.Cursor("")).
 			Return(make(
-				[]notionapi.Database, 0), notionapi.Cursor(""), GenericError)
+				[]notionapi.Database, 0), notionapi.Cursor(""), errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW, &builder.TreeBuilderRequest{})
@@ -435,7 +435,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWriter functions
-		mockWritePage(mockedRW, mock.Anything, GenericError)
+		mockWritePage(mockedRW, mock.Anything, errGeneric)
 		mockedRW.On("CleanUp", context.Background()).Return(nil)
 
 		// mock all required NotionClient functions
@@ -460,7 +460,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWirter functions
-		mockWriteDatabase(mockedRW, mock.Anything, GenericError)
+		mockWriteDatabase(mockedRW, mock.Anything, errGeneric)
 		mockedRW.On("CleanUp", context.Background()).Return(nil)
 
 		// mock all required NotionClient functions
@@ -508,7 +508,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		childIter := iterator.GetChildIterator(tree.RootNode)
 		for {
 			obj, err := childIter.Next()
-			if err == iterator.Done {
+			if err == iterator.ErrDone {
 				break
 			}
 			insertIntoObjectIdMapping(actualObjectMapping,
@@ -518,14 +518,14 @@ func TestExportTreeBuilder(t *testing.T) {
 		treeIter := iterator.GetTreeIterator(tree.RootNode)
 		for {
 			obj, err := treeIter.Next()
-			if err == iterator.Done {
+			if err == iterator.ErrDone {
 				break
 			}
 
 			childIter := iterator.GetChildIterator(obj)
 			for {
 				childObj, err := childIter.Next()
-				if err == iterator.Done {
+				if err == iterator.ErrDone {
 					break
 				}
 				insertIntoObjectIdMapping(actualObjectMapping, obj.GetNotionObjectId(),
@@ -546,7 +546,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		// mock all required NotionClient functions
 		mockedNotionClient.On("GetPageByID", context.Background(),
 			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624")).
-			Return(nil, GenericError)
+			Return(nil, errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -564,7 +564,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWriter functions
-		mockWritePage(mockedRW, mock.Anything, GenericError)
+		mockWritePage(mockedRW, mock.Anything, errGeneric)
 		mockedRW.On("CleanUp", context.Background()).Return(nil)
 
 		// mock all required NotionClient functions
@@ -603,7 +603,7 @@ func TestExportTreeBuilder(t *testing.T) {
 			"GetPageBlocks", context.Background(),
 			notionclient.PageID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
 			EMPTY_CURSOR).
-			Return([]notionapi.Block{}, EMPTY_CURSOR, GenericError)
+			Return([]notionapi.Block{}, EMPTY_CURSOR, errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -627,7 +627,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetDatabaseByID", context.Background(),
 			notionclient.DatabaseID("36dac6ee-76e9-4c99-94a9-b0989be3f624")).
-			Return(nil, GenericError)
+			Return(nil, errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(
 			context.Background(), mockedNotionClient, mockedRW,
@@ -646,7 +646,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient := mocks.NewNotionClient(t)
 
 		// mock ReaderWriter functions
-		mockWriteDatabase(mockedRW, mock.Anything, GenericError)
+		mockWriteDatabase(mockedRW, mock.Anything, errGeneric)
 		mockedRW.On("CleanUp", context.Background()).Return(nil)
 
 		// mock all required NotionClient functions
@@ -686,7 +686,7 @@ func TestExportTreeBuilder(t *testing.T) {
 			"GetDatabasePages", context.Background(),
 			notionclient.DatabaseID("36dac6ee-76e9-4c99-94a9-b0989be3f624"),
 			EMPTY_CURSOR).
-			Return([]notionapi.Page{}, EMPTY_CURSOR, GenericError)
+			Return([]notionapi.Page{}, EMPTY_CURSOR, errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -706,7 +706,7 @@ func TestExportTreeBuilder(t *testing.T) {
 
 		// Mock ReaderWriter functions
 		mockWritePage(mockedRW, mock.Anything, nil)
-		mockWriteBlock(mockedRW, mock.Anything, GenericError)
+		mockWriteBlock(mockedRW, mock.Anything, errGeneric)
 		mockedRW.On("CleanUp", context.Background()).Return(nil)
 
 		// mock all required NotionClient functions
@@ -775,7 +775,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		mockedNotionClient.On(
 			"GetChildBlocksOfBlock", context.Background(),
 			notionclient.BlockID(blockId), EMPTY_CURSOR).
-			Return([]notionapi.Block{}, EMPTY_CURSOR, GenericError)
+			Return([]notionapi.Block{}, EMPTY_CURSOR, errGeneric)
 
 		treeBuilder := builder.GetExportTreebuilder(context.Background(),
 			mockedNotionClient, mockedRW,
@@ -821,7 +821,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		childIter := iterator.GetChildIterator(tree.RootNode)
 		for {
 			obj, err := childIter.Next()
-			if err == iterator.Done {
+			if err == iterator.ErrDone {
 				break
 			}
 			insertIntoObjectIdMapping(actualObjectMapping,
@@ -831,14 +831,14 @@ func TestExportTreeBuilder(t *testing.T) {
 		treeIter := iterator.GetTreeIterator(tree.RootNode)
 		for {
 			obj, err := treeIter.Next()
-			if err == iterator.Done {
+			if err == iterator.ErrDone {
 				break
 			}
 
 			childIter := iterator.GetChildIterator(obj)
 			for {
 				childObj, err := childIter.Next()
-				if err == iterator.Done {
+				if err == iterator.ErrDone {
 					break
 				}
 				insertIntoObjectIdMapping(actualObjectMapping,

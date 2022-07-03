@@ -23,7 +23,7 @@ func GetTreeIterator(nodeObj *node.Node) Iterator {
 			childIter := GetChildIterator(nodeObj)
 			for {
 				childNode, err := childIter.Next()
-				if err == Done {
+				if err == ErrDone {
 					break
 				}
 				queue.PushBack(childNode)
@@ -41,7 +41,7 @@ func GetTreeIterator(nodeObj *node.Node) Iterator {
 
 func (iter *TreeIterator) Next() (*node.Node, error) {
 	if iter.queue.Len() == 0 {
-		return nil, Done
+		return nil, ErrDone
 	}
 
 	front := iter.queue.Front()
@@ -55,7 +55,7 @@ func (iter *TreeIterator) Next() (*node.Node, error) {
 
 	for {
 		childNode, err := childIter.Next()
-		if err == Done {
+		if err == ErrDone {
 			break
 		}
 		iter.queue.PushBack(childNode)

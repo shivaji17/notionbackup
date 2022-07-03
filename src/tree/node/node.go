@@ -22,10 +22,10 @@ func (path FilePath) String() string {
 
 const (
 	UNKNOWN  NodeType = 0
-	ROOT              = 1
-	PAGE              = 2
-	DATABASE          = 3
-	BLOCK             = 4
+	ROOT     NodeType = 1
+	PAGE     NodeType = 2
+	DATABASE NodeType = 3
+	BLOCK    NodeType = 4
 )
 
 type Node struct {

@@ -7,7 +7,7 @@ BINARY := notionbackup
 
 .PHONY: test
 test:
-	go test -v $(SRC_DIR)/...
+	go test -v $(ROOT_DIR)/...
 
 .PHONY: install
 install:
@@ -27,7 +27,7 @@ tidy:
 
 .PHONY: fmt
 fmt:
-	go fmt $(SRC_DIR)/...
+	go fmt $(ROOT_DIR)/...
 
 .PHONY: all
 all: fmt tidy test
