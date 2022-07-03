@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/rs/zerolog"
 	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 	"github.com/sawantshivaji1997/notionbackup/src/tree"
@@ -50,9 +51,11 @@ func GetChildrenUuidList(nodeObj *node.Node) []string {
 
 func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 	tree *tree.Tree) error {
-
+	log := zerolog.Ctx(ctx)
 	if tree.RootNode.GetNodeType() != node.ROOT {
-		return errors.New("root node does not have a type 'ROOT'")
+		errMsg := "root node does not have a type 'ROOT'"
+		log.Error().Msg(errMsg)
+		return errors.New(errMsg)
 	}
 
 	metadataObj := &metadata.MetaData{

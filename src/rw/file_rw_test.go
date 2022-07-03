@@ -74,8 +74,8 @@ func TestGetFileReaderWriter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			fileRW, err := rw.GetFileReaderWriter(test.baseDirPath,
-				test.createDirIfNotExist)
+			fileRW, err := rw.GetFileReaderWriter(context.Background(),
+				test.baseDirPath, test.createDirIfNotExist)
 			if test.wantErr {
 				assert.Nil(t, fileRW)
 				assert.NotNil(t, err)
@@ -129,7 +129,8 @@ func TestWriteDatabase(t *testing.T) {
 		},
 	}
 
-	filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -174,7 +175,8 @@ func TestReadDatabase(t *testing.T) {
 		},
 	}
 
-	filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -306,7 +308,8 @@ func TestWritePage(t *testing.T) {
 		},
 	}
 
-	filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -351,7 +354,8 @@ func TestReadPage(t *testing.T) {
 		},
 	}
 
-	filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -408,7 +412,8 @@ func TestWriteBlock(t *testing.T) {
 		},
 	}
 
-	filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -452,7 +457,8 @@ func TestReadBlock(t *testing.T) {
 		},
 	}
 
-	filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -604,7 +610,8 @@ func TestCleanUp(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+			filerw, err := rw.GetFileReaderWriter(context.Background(),
+				TESTDATAPATH, true)
 			assert.Nil(t, err)
 			id1, err := filerw.WriteBlock(context.Background(), block)
 			assert.NotEmpty(t, id1)
@@ -632,7 +639,8 @@ func TestCleanUp(t *testing.T) {
 
 func TestWriteMetaData(t *testing.T) {
 	t.Run("File write successful", func(t *testing.T) {
-		filerw, err := rw.GetFileReaderWriter(TESTDATAPATH, true)
+		filerw, err := rw.GetFileReaderWriter(context.Background(),
+			TESTDATAPATH, true)
 		assert.NotNil(t, filerw)
 		assert.Nil(t, err)
 

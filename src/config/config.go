@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/rs/zerolog"
 	"github.com/sawantshivaji1997/notionbackup/src/exporter"
 	"github.com/sawantshivaji1997/notionbackup/src/notionclient"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
@@ -70,8 +71,10 @@ func (c *Config) validateBackupConfig() error {
 func (c *Config) executeBackup(ctx context.Context) error {
 	ntnClient := notionclient.GetNotionApiClient(ctx, notionapi.Token(c.Token),
 		notionapi.NewClient)
-	readerWriter, err := rw.GetFileReaderWriter(c.Dir, c.Create_Dir)
+	log := zerolog.Ctx(ctx)
+	readerWriter, err := rw.GetFileReaderWriter(ctx, c.Dir, c.Create_Dir)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to create ReaderWriter instance")
 		return err
 	}
 
@@ -84,15 +87,35 @@ func (c *Config) executeBackup(ctx context.Context) error {
 		treeBuilderReq)
 	tree, err := treeBuilder.BuildTree(ctx)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to build the notion object tree")
 		return err
 	}
 
+	log.Info().Msg("Creating metadata of the exported data")
 	err = exporter.ExportTree(ctx, readerWriter, tree)
+	if err != nil {
+		log.Error().Err(err).Msg(
+			"Failed to create the metadata of the exported data. Cleaning up...")
+
+		err2 := readerWriter.CleanUp(ctx)
+		if err2 != nil {
+			log.Warn().Err(err2).Msg(
+				"Failed to cleanup the exported data. Manual cleanup may be required")
+		} else {
+			log.Info().Msg("Cleanup successful")
+		}
+	} else {
+		log.Info().Msg("Backup successful")
+	}
+
 	return err
 }
 
 func (c *Config) Execute(ctx context.Context) error {
+	log := zerolog.Ctx(ctx)
 	if c.Operation_Type == BACKUP {
+		log.Info().Msg("Starting backup operation")
+
 		err := c.validateBackupConfig()
 		if err != nil {
 			return err

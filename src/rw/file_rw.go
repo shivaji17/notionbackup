@@ -9,6 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/rs/zerolog"
+	"github.com/sawantshivaji1997/notionbackup/src/logging"
 	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
 	"google.golang.org/protobuf/proto"
@@ -31,8 +33,9 @@ type FileReaderWriter struct {
 	dataIdentifierList []DataIdentifier
 }
 
-func GetFileReaderWriter(basePath string,
+func GetFileReaderWriter(ctx context.Context, basePath string,
 	createDirIfNotExist bool) (ReaderWriter, error) {
+	log := zerolog.Ctx(ctx)
 	err := utils.CheckIfDirExists(basePath)
 	if err != nil {
 		if !createDirIfNotExist {
@@ -46,8 +49,16 @@ func GetFileReaderWriter(basePath string,
 	}
 
 	databaseDirPath := filepath.Join(basePath, DATABASE_DIR_NAME)
+	log.Info().Str(logging.ExportPath, databaseDirPath).Msg(
+		"Database objects backup path")
+
 	pageDirPath := filepath.Join(basePath, PAGE_DIR_NAME)
+	log.Info().Str(logging.ExportPath, pageDirPath).Msg(
+		"Page objects backup path")
+
 	blockDirPath := filepath.Join(basePath, BLOCK_DIR_NAME)
+	log.Info().Str(logging.ExportPath, blockDirPath).Msg(
+		"Block objects backup path")
 
 	err = utils.CreateDirectory(databaseDirPath)
 	if err != nil {
@@ -191,6 +202,8 @@ func (rw *FileReaderWriter) WriteMetaData(ctx context.Context,
 	}
 
 	path := filepath.Join(rw.baseDirPath, METADATA_FILE_NAME)
+	zerolog.Ctx(ctx).Info().Str(logging.MetaDataFilePath, path).Msg(
+		"Writing Metadata file")
 	err = os.WriteFile(path, dataBytes, METADATA_FILE_PERM)
 	if err != nil {
 		return err
