@@ -3,7 +3,7 @@ package notionclient_test
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -144,7 +144,7 @@ func TestGetAllPages(t *testing.T) {
 			filePath:    "",
 			wantErr:     true,
 			emptyResult: true,
-			err:         errors.New(ERROR_STR),
+			err:         fmt.Errorf(ERROR_STR),
 			cursorEmpty: true,
 		},
 		{
@@ -214,7 +214,7 @@ func TestGetPagesByName(t *testing.T) {
 			filePath:    SEARCH_PAGES_WITH_NAME_JSON,
 			wantErr:     true,
 			emptyResult: true,
-			err:         errors.New(ERROR_STR),
+			err:         fmt.Errorf(ERROR_STR),
 		},
 	}
 
@@ -265,7 +265,7 @@ func TestGetAllDatabases(t *testing.T) {
 			filePath:    "",
 			wantErr:     true,
 			emptyResult: true,
-			err:         errors.New(ERROR_STR),
+			err:         fmt.Errorf(ERROR_STR),
 		},
 		{
 			name:        "Get empty Database list",
@@ -325,7 +325,7 @@ func TestGetDatabasesByName(t *testing.T) {
 			filePath:     SEARCH_DATABASES_WITH_NAME_JSON,
 			wantErr:      true,
 			emptyResult:  true,
-			err:          errors.New(ERROR_STR),
+			err:          fmt.Errorf(ERROR_STR),
 		},
 	}
 
@@ -429,7 +429,7 @@ func TestGetPageByID(t *testing.T) {
 			filePath:    PAGE_JSON,
 			wantErr:     true,
 			emptyResult: true,
-			err:         errors.New(PAGE_NOT_EXIST_ERROR_STR),
+			err:         fmt.Errorf(PAGE_NOT_EXIST_ERROR_STR),
 		},
 	}
 
@@ -567,7 +567,7 @@ func TestGetDatabaseByID(t *testing.T) {
 			databaseQueryRspFilePath: DATABASE_QUERY_RESPONSE_JSON,
 			wantErr:                  true,
 			emptyResult:              true,
-			err:                      errors.New(DATABASE_NOT_EXIST_ERROR_STR),
+			err:                      fmt.Errorf(DATABASE_NOT_EXIST_ERROR_STR),
 		},
 	}
 
@@ -618,7 +618,7 @@ func TestGetPagesOfDatabase(t *testing.T) {
 			databaseQueryRspFilePath: DATABASE_QUERY_RESPONSE_JSON,
 			wantErr:                  true,
 			emptyResult:              true,
-			err:                      errors.New(DATABASE_NOT_EXIST_ERROR_STR),
+			err:                      fmt.Errorf(DATABASE_NOT_EXIST_ERROR_STR),
 		},
 		{
 			name:                     "Get zero pages of Database",
@@ -777,7 +777,7 @@ func TestGetBlocksOfPagesAndChildBlocksOfBlock(t *testing.T) {
 			blockFilePath:       BLOCKS_JSON,
 			wantErr:             true,
 			emptyResult:         true,
-			err:                 errors.New(EMPTY_SEARCH_RESULT),
+			err:                 fmt.Errorf(EMPTY_SEARCH_RESULT),
 		},
 	}
 
@@ -833,7 +833,7 @@ func TestGetBlockByID(t *testing.T) {
 			childBlocksFilePath: EMPTY_SEARCH_RESULT,
 			blockFilePath:       BLOCKS_JSON,
 			wantErr:             true,
-			err:                 errors.New(EMPTY_SEARCH_RESULT),
+			err:                 fmt.Errorf(EMPTY_SEARCH_RESULT),
 		},
 	}
 

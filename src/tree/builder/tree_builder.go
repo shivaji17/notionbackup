@@ -2,7 +2,7 @@ package builder
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/sawantshivaji1997/notionbackup/src/tree"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
@@ -21,7 +21,7 @@ type stackContent struct {
 	objectId   string
 }
 
-var StackEmpty = errors.New("no more items in iterator")
+var stackEmpty = fmt.Errorf("no more items in stack")
 
 type stack []*node.Node
 
@@ -38,7 +38,7 @@ func (s *stack) Push(object *node.Node) {
 // Remove and return top element of stack. Return false if stack is empty.
 func (s *stack) Pop() (*node.Node, error) {
 	if s.IsEmpty() {
-		return nil, StackEmpty
+		return nil, stackEmpty
 	} else {
 		index := len(*s) - 1
 		object := (*s)[index]

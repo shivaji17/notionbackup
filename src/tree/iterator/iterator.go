@@ -1,7 +1,7 @@
 package iterator
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 )
@@ -10,7 +10,7 @@ import (
 // complete; when there are no more items to return.
 // Every Iterator type extending Iterator interface must return this error
 // when there are no more items to iterate
-var Done = errors.New("no more items in iterator")
+var Done = fmt.Errorf("no more items in iterator")
 
 // Every Iterator type must extend this interface while implementing the
 // iterator

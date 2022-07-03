@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"path/filepath"
 
 	"github.com/google/uuid"
@@ -34,7 +34,7 @@ type Config struct {
 func validateUUIDs(objectType string, uuidList []string) error {
 	for _, objectUUID := range uuidList {
 		if _, err := uuid.Parse(objectUUID); err != nil {
-			return errors.New("invalid " + objectType + " UUID: " + objectUUID)
+			return fmt.Errorf("invalid %s UUID: %s", objectType, objectUUID)
 		}
 	}
 	return nil
@@ -42,7 +42,7 @@ func validateUUIDs(objectType string, uuidList []string) error {
 
 func (c *Config) validateBackupConfig() error {
 	if c.Token == "" {
-		return errors.New("notion secret token not provided")
+		return fmt.Errorf("notion secret token not provided")
 	}
 
 	if c.Dir == "" {
@@ -124,5 +124,5 @@ func (c *Config) Execute(ctx context.Context) error {
 		return c.executeBackup(ctx)
 	}
 
-	return errors.New("unknown operation type provided")
+	return fmt.Errorf("unknown operation type provided")
 }

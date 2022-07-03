@@ -2,7 +2,7 @@ package node_test
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"math/rand"
 	"testing"
 
@@ -32,7 +32,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 		{
 			name:              "Return error",
 			storageIdentifier: "",
-			err:               errors.New("error while writing object"),
+			err:               fmt.Errorf("error while writing object"),
 			wantErr:           true,
 			notionObjectId:    "",
 		},

@@ -2,7 +2,7 @@ package builder
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/jomei/notionapi"
 	"github.com/rs/zerolog"
@@ -40,7 +40,7 @@ func GetExportTreebuilder(ctx context.Context,
 	return &ExportTreeBuilder{
 		notionClient:               notionClient,
 		rw:                         rw,
-		err:                        errors.New("tree was never built"),
+		err:                        fmt.Errorf("tree was never built"),
 		rootNode:                   nil,
 		pageId2PageNodeMap:         make(map[string]*node.Node),
 		databaseId2DatabaseNodeMap: make(map[string]*node.Node),
@@ -398,7 +398,7 @@ func (builderObj *ExportTreeBuilder) buildTreeUntilStackEmpty(
 	ctx context.Context) error {
 	for {
 		object, err := builderObj.nodeStack.Pop()
-		if err == StackEmpty {
+		if err == stackEmpty {
 			break
 		}
 

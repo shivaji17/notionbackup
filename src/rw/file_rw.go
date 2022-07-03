@@ -3,7 +3,7 @@ package rw
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -120,7 +120,7 @@ func (rw *FileReaderWriter) readData(ctx context.Context, filePath string,
 func (rw *FileReaderWriter) WriteDatabase(ctx context.Context,
 	database *notionapi.Database) (DataIdentifier, error) {
 	if database == nil {
-		return "", errors.New("nullptr received for database object")
+		return "", fmt.Errorf("nullptr received for database object")
 	}
 
 	return rw.writeData(ctx, database, rw.databaseDirPath)
@@ -139,7 +139,7 @@ func (rw *FileReaderWriter) ReadDatabase(ctx context.Context,
 func (rw *FileReaderWriter) WritePage(ctx context.Context,
 	page *notionapi.Page) (DataIdentifier, error) {
 	if page == nil {
-		return "", errors.New("nullptr received for page object")
+		return "", fmt.Errorf("nullptr received for page object")
 	}
 
 	return rw.writeData(ctx, page, rw.pageDirPath)
@@ -158,7 +158,7 @@ func (rw *FileReaderWriter) ReadPage(ctx context.Context,
 func (rw *FileReaderWriter) WriteBlock(ctx context.Context,
 	block notionapi.Block) (DataIdentifier, error) {
 	if block == nil {
-		return "", errors.New("nullptr received for block object")
+		return "", fmt.Errorf("nullptr received for block object")
 	}
 
 	return rw.writeData(ctx, block, rw.blockDirPath)

@@ -2,7 +2,7 @@ package iterator
 
 import (
 	"container/list"
-	"errors"
+	"fmt"
 
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 )
@@ -47,7 +47,7 @@ func (iter *TreeIterator) Next() (*node.Node, error) {
 	front := iter.queue.Front()
 	currNode, ok := front.Value.(*node.Node)
 	if !ok {
-		return nil, errors.New("failed to parse node object type")
+		return nil, fmt.Errorf("failed to parse node object type")
 	}
 
 	childIter := GetChildIterator(currNode)

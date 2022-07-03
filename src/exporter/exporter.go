@@ -2,7 +2,7 @@ package exporter
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/rs/zerolog"
 	"github.com/sawantshivaji1997/notionbackup/src/metadata"
@@ -29,7 +29,7 @@ func Convert2ProtoNotionObject(nodeObj *node.Node) (*metadata.NotionObject,
 	case node.BLOCK:
 		notionObj.Type = metadata.NotionObjectType_BLOCK
 	default:
-		return nil, errors.New("unknown notion object type of node")
+		return nil, fmt.Errorf("unknown notion object type of node")
 	}
 
 	return notionObj, nil
@@ -55,7 +55,7 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 	if tree.RootNode.GetNodeType() != node.ROOT {
 		errMsg := "root node does not have a type 'ROOT'"
 		log.Error().Msg(errMsg)
-		return errors.New(errMsg)
+		return fmt.Errorf(errMsg)
 	}
 
 	metadataObj := &metadata.MetaData{

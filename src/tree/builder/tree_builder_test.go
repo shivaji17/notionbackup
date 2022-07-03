@@ -3,7 +3,7 @@ package builder_test
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -30,7 +30,7 @@ const (
 	EMPTY_CURSOR                = notionapi.Cursor("")
 )
 
-var GenericError = errors.New(ERROR_STR)
+var GenericError = fmt.Errorf(ERROR_STR)
 
 func mockWritePage(m *mocks.ReaderWriter, param interface{}, err error) {
 	m.On("WritePage", context.Background(), param).
