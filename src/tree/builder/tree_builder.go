@@ -12,6 +12,7 @@ type TreeBuilderRequest struct {
 	PageIdList     []string
 	DatabaseIdList []string
 }
+
 type TreeBuilder interface {
 	BuildTree(context.Context) (*tree.Tree, error)
 }

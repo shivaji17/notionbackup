@@ -264,3 +264,11 @@ func TestDecodeBlockObject(t *testing.T) {
 		})
 	}
 }
+
+func TestGetUniqueValues(t *testing.T) {
+	input := []string{"a", "b", "c", "d", "a", "b"}
+	expectedOutput := []string{"a", "b", "c", "d"}
+
+	output := utils.GetUniqueValues(input)
+	assert.Equal(t, expectedOutput, output)
+}

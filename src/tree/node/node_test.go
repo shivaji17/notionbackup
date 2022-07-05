@@ -10,6 +10,7 @@ import (
 	"github.com/jomei/notionapi"
 	"github.com/sawantshivaji1997/notionbackup/src/mocks"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
+	"github.com/sawantshivaji1997/notionbackup/src/tree/iterator"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 	"github.com/stretchr/testify/assert"
 )
@@ -98,6 +99,8 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.False(databaseNode.HasChildNode())
 				assert.Nil(databaseNode.GetChildNode())
 				assert.Nil(databaseNode.GetParentNode())
+				assert.Equal(string(databaseNode.GetID()),
+					databaseNode.GetID().String())
 				assert.Nil(err1)
 
 				// Assert PageNode
@@ -109,6 +112,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.False(pageNode.HasChildNode())
 				assert.Nil(pageNode.GetChildNode())
 				assert.Nil(pageNode.GetParentNode())
+				assert.Equal(string(pageNode.GetID()), pageNode.GetID().String())
 				assert.Nil(err2)
 
 				// Assert BlockNode
@@ -120,6 +124,7 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.False(blockNode.HasChildNode())
 				assert.Nil(blockNode.GetChildNode())
 				assert.Nil(blockNode.GetParentNode())
+				assert.Equal(string(blockNode.GetID()), blockNode.GetID().String())
 				assert.Nil(err3)
 			}
 		})
@@ -187,4 +192,138 @@ func TestAddChild(t *testing.T) {
 	}
 
 	assert.Equal(3, n)
+}
+
+func TestDeleteChild(t *testing.T) {
+	assert := assert.New(t)
+
+	t.Run("No child exists", func(t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		deleteNode := parentNode.DeleteChild(node.NodeID(uuid.NewString()))
+		assert.Nil(deleteNode)
+	})
+
+	t.Run("Node with one child and child ID matches", func(t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		toDeleteNode := getRandomNodeObject(t)
+		parentNode.AddChild(toDeleteNode)
+		deletedNode := parentNode.DeleteChild(toDeleteNode.GetID())
+		assert.Equal(toDeleteNode, deletedNode)
+
+		iter := iterator.GetChildIterator(parentNode)
+		nodeObj, err := iter.Next()
+		assert.Equal(iterator.ErrDone, err)
+		assert.Nil(nodeObj)
+	})
+
+	t.Run("Node with multiple child and child is present first in list", func(
+		t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		child2 := getRandomNodeObject(t)
+		child3 := getRandomNodeObject(t)
+		toDeleteNode := getRandomNodeObject(t)
+		parentNode.AddChild(toDeleteNode)
+		parentNode.AddChild(child2)
+		parentNode.AddChild(child3)
+
+		deletedNode := parentNode.DeleteChild(toDeleteNode.GetID())
+		assert.Equal(toDeleteNode, deletedNode)
+
+		iter := iterator.GetChildIterator(parentNode)
+		nodeObj, err := iter.Next()
+		assert.Equal(child2, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(child3, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(iterator.ErrDone, err)
+		assert.Nil(nodeObj)
+
+	})
+
+	t.Run("Node with one child and child ID does not match", func(t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		child1 := getRandomNodeObject(t)
+		parentNode.AddChild(child1)
+		deletedNode := parentNode.DeleteChild(node.NodeID(uuid.NewString()))
+		assert.Nil(deletedNode)
+	})
+
+	t.Run("Node with multiple child and child is present in middle of the list", func(
+		t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		child1 := getRandomNodeObject(t)
+		child2 := getRandomNodeObject(t)
+		toDeleteNode := getRandomNodeObject(t)
+		child3 := getRandomNodeObject(t)
+		parentNode.AddChild(child1)
+		parentNode.AddChild(child2)
+		parentNode.AddChild(toDeleteNode)
+		parentNode.AddChild(child3)
+
+		deletedNode := parentNode.DeleteChild(toDeleteNode.GetID())
+		assert.Equal(toDeleteNode, deletedNode)
+
+		iter := iterator.GetChildIterator(parentNode)
+		nodeObj, err := iter.Next()
+		assert.Equal(child1, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(child2, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(child3, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(iterator.ErrDone, err)
+		assert.Nil(nodeObj)
+
+	})
+
+	t.Run("Node with multiple child and child is present at last in list", func(
+		t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		child1 := getRandomNodeObject(t)
+		child2 := getRandomNodeObject(t)
+		toDeleteNode := getRandomNodeObject(t)
+		parentNode.AddChild(child1)
+		parentNode.AddChild(child2)
+		parentNode.AddChild(toDeleteNode)
+
+		deletedNode := parentNode.DeleteChild(toDeleteNode.GetID())
+		assert.Equal(toDeleteNode, deletedNode)
+
+		iter := iterator.GetChildIterator(parentNode)
+		nodeObj, err := iter.Next()
+		assert.Equal(child1, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(child2, nodeObj)
+		assert.Nil(err)
+
+		nodeObj, err = iter.Next()
+		assert.Equal(iterator.ErrDone, err)
+		assert.Nil(nodeObj)
+	})
+
+	t.Run("Node with multiple child and child ID does not match", func(
+		t *testing.T) {
+		parentNode := getRandomNodeObject(t)
+		child1 := getRandomNodeObject(t)
+		child2 := getRandomNodeObject(t)
+		child3 := getRandomNodeObject(t)
+		parentNode.AddChild(child1)
+		parentNode.AddChild(child2)
+		parentNode.AddChild(child3)
+
+		deletedNode := parentNode.DeleteChild(node.NodeID(uuid.NewString()))
+		assert.Nil(deletedNode)
+	})
 }

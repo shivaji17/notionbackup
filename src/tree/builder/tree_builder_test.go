@@ -805,8 +805,11 @@ func TestExportTreeBuilder(t *testing.T) {
 		treeBuilder := builder.GetExportTreebuilder(
 			context.Background(), mockedNotionClient, mockedRW,
 			&builder.TreeBuilderRequest{
-				PageIdList:     []string{"36dac6ee-76e9-4c99-94a9-b0989be3f624"},
-				DatabaseIdList: []string{"db770044-b760-402e-862a-50fef8d6b5d9"},
+				PageIdList: []string{"05034203-2870-4bc8-b1f9-22c0ae6e56ba",
+					"e50c7b3a-e61c-4b26-a6f9-6dfef9f74148",
+					"633ab325-2c26-49eb-a94b-fb57e4271350"},
+				DatabaseIdList: []string{"5ed2d97a-510a-4756-b113-cc28c7a30fd7",
+					"db770044-b760-402e-862a-50fef8d6b5d9"},
 			})
 
 		tree, err := treeBuilder.BuildTree(context.Background())
