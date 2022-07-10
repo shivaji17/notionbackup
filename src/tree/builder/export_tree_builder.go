@@ -11,6 +11,7 @@ import (
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 	"github.com/sawantshivaji1997/notionbackup/src/tree"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/sawantshivaji1997/notionbackup/src/utils"
 )
 
 const (
@@ -32,6 +33,7 @@ type ExportTreeBuilder struct {
 	databaseId2PageListMap     map[string][]string
 	nodeStack                  stack
 	request                    *TreeBuilderRequest
+	objectId2NodeMap           map[string]*node.Node
 }
 
 func GetExportTreebuilder(ctx context.Context,
@@ -47,6 +49,7 @@ func GetExportTreebuilder(ctx context.Context,
 		databaseId2PageListMap:     make(map[string][]string),
 		nodeStack:                  make(stack, 0),
 		request:                    request,
+		objectId2NodeMap:           make(map[string]*node.Node),
 	}
 }
 
@@ -75,6 +78,59 @@ func (builderObj *ExportTreeBuilder) addDatabaseIdToPageMapping(
 		[]string{page.ID.String()}
 }
 
+// Checks if notion object with ID is already added to tree
+func (builderObj *ExportTreeBuilder) getNode(
+	notionObjectID string) *node.Node {
+	nodeObj := builderObj.objectId2NodeMap[notionObjectID]
+	return nodeObj
+}
+
+// This function handles the scenario where user has provided multiple page and
+// database IDs to backup and some pages/databases might be child of another
+// page or database. In such cases, we don't want to create two copies same page
+// or database node (one node child of root node while other node child of
+// actual node to which it belongs)
+// Example: Page P1 has child Page P2, Page P2 has child Page P3. Now user
+// provides UUID of Page P1 and P3 to backup. In such scenarios, we don't want
+// to make Page P3 child of root node as it will be automatically made child of
+// Page P2 while backing up whole Page P1
+// This function handles such scenario where it modifies the tree accordingly
+// adds the node as a child appropriate node
+func (builderObj *ExportTreeBuilder) restructureTree(ctx context.Context,
+	restructureNode *node.Node, parentNode *node.Node) error {
+	objectTypeUuid := logging.PageUUID
+	if restructureNode.GetNodeType() == node.DATABASE {
+		objectTypeUuid = logging.DatabaseUUID
+	}
+
+	log := zerolog.Ctx(ctx).With().Str(objectTypeUuid,
+		restructureNode.GetNotionObjectId()).Logger()
+	log.Debug().Msgf("Restructuring the %s Node", restructureNode.GetNodeType())
+
+	if restructureNode.GetParentNode().GetNodeType() == node.ROOT {
+		deletedNode := restructureNode.GetParentNode().DeleteChild(
+			restructureNode.GetID())
+
+		if deletedNode == nil {
+			errMsg := fmt.Sprintf("%s node with UUID '%s' does not exist",
+				restructureNode.GetNodeType(), restructureNode.GetNotionObjectId())
+			return fmt.Errorf(errMsg)
+		}
+
+		if deletedNode.GetID() != restructureNode.GetID() {
+			errMsg := fmt.Sprintf("Invalid node deleted: Node to Delete: (%s, %s), "+
+				"Deleted Node: (%s, %s)",
+				restructureNode.GetNodeType(), restructureNode.GetNotionObjectId(),
+				deletedNode.GetNodeType(), deletedNode.GetNotionObjectId())
+			return fmt.Errorf(errMsg)
+		}
+
+		parentNode.AddChild(restructureNode)
+	}
+
+	return nil
+}
+
 // Create node object for given page and add it's children to created page node
 // object
 func (builderObj *ExportTreeBuilder) addPage(ctx context.Context,
@@ -85,6 +141,8 @@ func (builderObj *ExportTreeBuilder) addPage(ctx context.Context,
 	if nodeObj, found := builderObj.pageId2PageNodeMap[pageId]; found {
 		pageNode = nodeObj
 		delete(builderObj.pageId2PageNodeMap, pageId)
+	} else if foundNode := builderObj.getNode(pageId); foundNode != nil {
+		return builderObj.restructureTree(ctx, foundNode, parentNode)
 	} else {
 		log.Debug().Msg("Fetching Page")
 		page, err := builderObj.notionClient.GetPageByID(ctx,
@@ -98,6 +156,8 @@ func (builderObj *ExportTreeBuilder) addPage(ctx context.Context,
 			log.Error().Err(err).Msg(logging.PageNodeCreateErr)
 			return err
 		}
+
+		builderObj.objectId2NodeMap[nodeObj.GetNotionObjectId()] = nodeObj
 		pageNode = nodeObj
 	}
 
@@ -150,6 +210,8 @@ func (builderObj *ExportTreeBuilder) addDatabase(ctx context.Context,
 		databaseId2DatabaseNodeMap[databaseId]; found {
 		databaseNode = nodeObj
 		delete(builderObj.databaseId2DatabaseNodeMap, databaseId)
+	} else if foundNode := builderObj.getNode(databaseId); foundNode != nil {
+		return builderObj.restructureTree(ctx, foundNode, parentNode)
 	} else {
 		log.Debug().Msg("Fetching Database")
 		database, err := builderObj.notionClient.GetDatabaseByID(ctx,
@@ -165,6 +227,8 @@ func (builderObj *ExportTreeBuilder) addDatabase(ctx context.Context,
 			log.Error().Err(err).Msg(logging.DatabaseNodeCreateErr)
 			return err
 		}
+
+		builderObj.objectId2NodeMap[nodeObj.GetNotionObjectId()] = nodeObj
 		databaseNode = nodeObj
 	}
 
@@ -206,6 +270,16 @@ func (builderObj *ExportTreeBuilder) queryAndAddDatabaseChildren(
 		}
 
 		for _, page := range pages {
+
+			if foundNode := builderObj.getNode(page.ID.String()); foundNode != nil {
+				err = builderObj.restructureTree(ctx, foundNode, parentNode)
+				if err != nil {
+					log.Error().Err(err).Str(logging.PageUUID, page.ID.String()).
+						Msg("Failed to restructure the tree for database page node")
+					return err
+				}
+			}
+
 			pageNode, err := node.CreatePageNode(ctx, &page, builderObj.rw)
 			if err != nil {
 				log.Error().Err(err).Str(logging.PageUUID, page.ID.String()).
@@ -213,6 +287,7 @@ func (builderObj *ExportTreeBuilder) queryAndAddDatabaseChildren(
 				return err
 			}
 
+			builderObj.objectId2NodeMap[pageNode.GetNotionObjectId()] = pageNode
 			parentNode.AddChild(pageNode)
 			builderObj.nodeStack.Push(pageNode)
 		}
@@ -450,6 +525,12 @@ func (builderObj *ExportTreeBuilder) buildTreeForWorkspace(
 // children
 func (builderObj *ExportTreeBuilder) buildTreeForGivenObjectIds(
 	ctx context.Context) error {
+
+	builderObj.request.PageIdList = utils.
+		GetUniqueValues(builderObj.request.PageIdList)
+	builderObj.request.DatabaseIdList = utils.
+		GetUniqueValues(builderObj.request.DatabaseIdList)
+
 	rootNode := node.CreateRootNode()
 
 	for _, pageId := range builderObj.request.PageIdList {
@@ -479,6 +560,7 @@ func (builderObj *ExportTreeBuilder) buildTreeForGivenObjectIds(
 func (builderObj *ExportTreeBuilder) BuildTree(ctx context.Context) (*tree.Tree,
 	error) {
 	log := zerolog.Ctx(ctx)
+
 	if builderObj.rootNode != nil {
 		return &tree.Tree{
 			RootNode: builderObj.rootNode,

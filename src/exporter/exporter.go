@@ -60,7 +60,8 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 
 	metadataObj := &metadata.MetaData{
 		NotionObjectMap: make(map[string]*metadata.NotionObject),
-		ObjectMapping:   make(map[string]*metadata.ChildrenNotionObjectUuids),
+		ParentUuid_2ChildrenUuidMap: make(
+			map[string]*metadata.ChildrenNotionObjectUuids),
 	}
 	rootNodeNotionObject, err := Convert2ProtoNotionObject(tree.RootNode)
 	if err != nil {
@@ -86,7 +87,7 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 
 		childrenUuidList := GetChildrenUuidList(nodeObj)
 		if len(childrenUuidList) > 0 {
-			metadataObj.ObjectMapping[nodeObj.GetID().String()] =
+			metadataObj.ParentUuid_2ChildrenUuidMap[nodeObj.GetID().String()] =
 				&metadata.ChildrenNotionObjectUuids{
 					ChildrenUuidList: childrenUuidList,
 				}

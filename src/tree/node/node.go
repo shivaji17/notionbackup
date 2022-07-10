@@ -9,23 +9,18 @@ import (
 )
 
 type NodeID string
-type NodeType int
-type FilePath string
+type NodeType string
 
 func (id NodeID) String() string {
 	return string(id)
 }
 
-func (path FilePath) String() string {
-	return string(path)
-}
-
 const (
-	UNKNOWN  NodeType = 0
-	ROOT     NodeType = 1
-	PAGE     NodeType = 2
-	DATABASE NodeType = 3
-	BLOCK    NodeType = 4
+	UNKNOWN  NodeType = "UNKNOWN"
+	ROOT     NodeType = "ROOT"
+	PAGE     NodeType = "PAGE"
+	DATABASE NodeType = "DATABASE"
+	BLOCK    NodeType = "BLOCK"
 )
 
 type Node struct {
@@ -160,4 +155,50 @@ func (nodeObj *Node) AddChild(childNode *Node) {
 
 		tempNode.sibling = childNode
 	}
+}
+
+// Delete a child with given node ID and return the deleted Node
+func (nodeObj *Node) DeleteChild(id NodeID) *Node {
+	if nodeObj.child == nil {
+		return nil
+	}
+
+	// First Check if child object matches with give Node ID
+	if nodeObj.child.id == id {
+		tempNode := nodeObj.child
+		if nodeObj.child.HasSibling() {
+			nodeObj.child = nodeObj.child.GetSiblingNode()
+		} else {
+			nodeObj.child = nil
+		}
+
+		tempNode.sibling = nil
+		tempNode.parent = nil
+		return tempNode
+	}
+
+	if !nodeObj.child.HasSibling() {
+		return nil
+	}
+
+	// Check all sibiling nodes
+	head := nodeObj.child
+
+	for {
+		if head.HasSibling() && head.sibling.id == id {
+			tempNode := head.sibling
+			head.sibling = head.sibling.sibling
+
+			tempNode.sibling = nil
+			tempNode.parent = nil
+			return tempNode
+		}
+
+		head = head.sibling
+		if head == nil {
+			break
+		}
+	}
+
+	return nil
 }

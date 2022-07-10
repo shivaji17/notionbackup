@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/sawantshivaji1997/notionbackup/src/config"
+	"github.com/sawantshivaji1997/notionbackup/src/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -41,6 +42,9 @@ func TakeLocalBackup(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(os.Stderr, "Failed to initialize logger: %v\n", err)
 		return err
 	}
+
+	pageUUIDs = utils.GetUniqueValues(pageUUIDs)
+	databaseUUIDs = utils.GetUniqueValues(databaseUUIDs)
 
 	cfg := &config.Config{
 		Token:          notionToken,

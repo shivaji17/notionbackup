@@ -133,3 +133,15 @@ func DecodeBlockObject(raw map[string]interface{}) (notionapi.Block, error) {
 	err = json.Unmarshal(j, b)
 	return b, err
 }
+
+func GetUniqueValues(strList []string) []string {
+	strMap := make(map[string]bool)
+	var result []string
+	for _, str := range strList {
+		if _, ok := strMap[str]; !ok {
+			strMap[str] = true
+			result = append(result, str)
+		}
+	}
+	return result
+}
