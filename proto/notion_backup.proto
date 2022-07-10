@@ -14,9 +14,9 @@ message MetaData {
   // Map for storing NotionObject with uuid as a key and NotionObject as a value
   map<string, NotionObject> notion_object_map = 1;
 
-  // Map stores the mapping of each NotionObject UUID to different NotionObject
-  // UUIDs
-  map<string, ChildrenNotionObjectUuids> object_mapping = 2;
+  // Map stores the mapping of each node UUID to different node UUIDs
+  map<string, ChildrenNotionObjectUuids> parent_uuid_2_children_uuid_map 
+    = 2;
 }
 
 // List of UUIDs of different NotionObject

@@ -9,18 +9,18 @@ import (
 )
 
 type NodeID string
-type NodeType int
+type NodeType string
 
 func (id NodeID) String() string {
 	return string(id)
 }
 
 const (
-	UNKNOWN  NodeType = 0
-	ROOT     NodeType = 1
-	PAGE     NodeType = 2
-	DATABASE NodeType = 3
-	BLOCK    NodeType = 4
+	UNKNOWN  NodeType = "UNKNOWN"
+	ROOT     NodeType = "ROOT"
+	PAGE     NodeType = "PAGE"
+	DATABASE NodeType = "DATABASE"
+	BLOCK    NodeType = "BLOCK"
 )
 
 type Node struct {
