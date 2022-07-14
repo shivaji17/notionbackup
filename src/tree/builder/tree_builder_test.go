@@ -764,7 +764,7 @@ func TestExportTreeBuilder(t *testing.T) {
 		// Mock ReaderWriter functions
 		mockWriteBlock(mockedRW, mock.Anything, nil)
 		mockWritePage(mockedRW, mock.Anything, nil)
-		mockedRW.On("CleanUp", context.Background()).Return(nil)
+		mockedRW.On("CleanUp", context.Background()).Return(errGeneric)
 
 		// mock all required NotionClient functions
 		mockedNotionClient.On("GetPageByID", context.Background(),

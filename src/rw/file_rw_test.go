@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -142,7 +143,9 @@ func TestWriteDatabase(t *testing.T) {
 				assert.NotNil(t, err)
 			} else {
 				assert.NotEmpty(t, identifier)
-				checkFilePermissions(t, string(identifier))
+				path := filepath.Join(TESTDATAPATH, rw.DATABASE_DIR_NAME,
+					identifier.String())
+				checkFilePermissions(t, path)
 				assert.Nil(t, err)
 			}
 			if test.cleanupRequied {
@@ -320,7 +323,9 @@ func TestWritePage(t *testing.T) {
 				assert.NotNil(t, err)
 			} else {
 				assert.NotEmpty(t, identifier)
-				checkFilePermissions(t, string(identifier))
+				path := filepath.Join(TESTDATAPATH, rw.PAGE_DIR_NAME,
+					identifier.String())
+				checkFilePermissions(t, path)
 				assert.Nil(t, err)
 			}
 			if test.cleanupRequied {
@@ -424,7 +429,9 @@ func TestWriteBlock(t *testing.T) {
 				assert.NotNil(t, err)
 			} else {
 				assert.NotEmpty(t, identifier)
-				checkFilePermissions(t, string(identifier))
+				path := filepath.Join(TESTDATAPATH, rw.BLOCK_DIR_NAME,
+					identifier.String())
+				checkFilePermissions(t, path)
 				assert.Nil(t, err)
 			}
 			if test.cleanupRequied {
@@ -649,4 +656,26 @@ func TestWriteMetaData(t *testing.T) {
 	})
 
 	// TODO: Add negative test cases
+}
+
+func TestFillStorageConfig(t *testing.T) {
+	filerw, err := rw.GetFileReaderWriter(context.Background(),
+		TESTDATAPATH, true)
+	assert.NotNil(t, filerw)
+	assert.Nil(t, err)
+
+	expectedStorageConfig := &metadata.StorageConfig{
+		Config: &metadata.StorageConfig_Local_{
+			Local: &metadata.StorageConfig_Local{
+				BlocksDir:   rw.BLOCK_DIR_NAME,
+				PageDir:     rw.PAGE_DIR_NAME,
+				DatabaseDir: rw.DATABASE_DIR_NAME,
+			},
+		},
+	}
+
+	storageConfig, err := filerw.GetStorageConfig(context.Background())
+	assert.Nil(t, err)
+	assert.Equal(t, expectedStorageConfig, storageConfig)
+
 }

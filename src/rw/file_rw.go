@@ -26,11 +26,11 @@ const (
 )
 
 type FileReaderWriter struct {
-	baseDirPath        string
-	databaseDirPath    string
-	pageDirPath        string
-	blockDirPath       string
-	dataIdentifierList []DataIdentifier
+	baseDirPath     string
+	databaseDirPath string
+	pageDirPath     string
+	blockDirPath    string
+	filePathList    []string
 }
 
 func GetFileReaderWriter(ctx context.Context, basePath string,
@@ -76,29 +76,29 @@ func GetFileReaderWriter(ctx context.Context, basePath string,
 	}
 
 	return &FileReaderWriter{
-		baseDirPath:        basePath,
-		databaseDirPath:    databaseDirPath,
-		pageDirPath:        pageDirPath,
-		blockDirPath:       blockDirPath,
-		dataIdentifierList: make([]DataIdentifier, 0),
+		baseDirPath:     basePath,
+		databaseDirPath: databaseDirPath,
+		pageDirPath:     pageDirPath,
+		blockDirPath:    blockDirPath,
+		filePathList:    make([]string, 0),
 	}, nil
 }
 
 func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{},
 	dirPath string) (DataIdentifier, error) {
-	dataIdentifier := filepath.Join(dirPath, uuid.New().String())
+	dataIdentifier := uuid.NewString()
+	filePath := filepath.Join(dirPath, dataIdentifier)
 	dataBytes, err := json.Marshal(&v)
 	if err != nil {
 		return "", err
 	}
 
-	err = os.WriteFile(dataIdentifier, dataBytes, OBJECT_FILE_PERM)
+	err = os.WriteFile(filePath, dataBytes, OBJECT_FILE_PERM)
 	if err != nil {
 		return "", err
 	}
 
-	rw.dataIdentifierList = append(rw.dataIdentifierList,
-		DataIdentifier(dataIdentifier))
+	rw.filePathList = append(rw.filePathList, filePath)
 	return DataIdentifier(dataIdentifier), nil
 }
 
@@ -184,8 +184,8 @@ func (rw *FileReaderWriter) CleanUp(ctx context.Context) error {
 	var externalErr error
 	externalErr = nil
 
-	for _, identifier := range rw.dataIdentifierList {
-		err := os.Remove(identifier.String())
+	for _, filePath := range rw.filePathList {
+		err := os.Remove(filePath)
 		if err != nil {
 			externalErr = err
 		}
@@ -210,4 +210,19 @@ func (rw *FileReaderWriter) WriteMetaData(ctx context.Context,
 	}
 
 	return nil
+}
+
+func (rw *FileReaderWriter) GetStorageConfig(ctx context.Context) (
+	*metadata.StorageConfig, error) {
+	localConfig := &metadata.StorageConfig_Local{
+		DatabaseDir: DATABASE_DIR_NAME,
+		PageDir:     PAGE_DIR_NAME,
+		BlocksDir:   BLOCK_DIR_NAME,
+	}
+
+	return &metadata.StorageConfig{
+		Config: &metadata.StorageConfig_Local_{
+			Local: localConfig,
+		},
+	}, nil
 }

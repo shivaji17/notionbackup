@@ -32,6 +32,29 @@ func (_m *ReaderWriter) CleanUp(_a0 context.Context) error {
 	return r0
 }
 
+// GetStorageConfig provides a mock function with given fields: _a0
+func (_m *ReaderWriter) GetStorageConfig(_a0 context.Context) (*metadata.StorageConfig, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *metadata.StorageConfig
+	if rf, ok := ret.Get(0).(func(context.Context) *metadata.StorageConfig); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*metadata.StorageConfig)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ReadBlock provides a mock function with given fields: _a0, _a1
 func (_m *ReaderWriter) ReadBlock(_a0 context.Context, _a1 rw.DataIdentifier) (notionapi.Block, error) {
 	ret := _m.Called(_a0, _a1)
