@@ -62,6 +62,7 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 		NotionObjectMap: make(map[string]*metadata.NotionObject),
 		ParentUuid_2ChildrenUuidMap: make(
 			map[string]*metadata.ChildrenNotionObjectUuids),
+		StorageConfig: nil,
 	}
 	rootNodeNotionObject, err := Convert2ProtoNotionObject(tree.RootNode)
 	if err != nil {
@@ -93,6 +94,13 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 				}
 		}
 	}
+
+	storageConfig, err := rw.GetStorageConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	metadataObj.StorageConfig = storageConfig
 
 	return rw.WriteMetaData(ctx, metadataObj)
 }

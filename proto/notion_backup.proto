@@ -10,20 +10,6 @@ enum NotionObjectType {
 	BLOCK = 4;
 }
 
-message MetaData {
-  // Map for storing NotionObject with uuid as a key and NotionObject as a value
-  map<string, NotionObject> notion_object_map = 1;
-
-  // Map stores the mapping of each node UUID to different node UUIDs
-  map<string, ChildrenNotionObjectUuids> parent_uuid_2_children_uuid_map 
-    = 2;
-}
-
-// List of UUIDs of different NotionObject
-message ChildrenNotionObjectUuids {
-  repeated string children_uuid_list = 1;
-}
-
 message NotionObject {
   // Unique identifier of the object in notionbackup module
   string uuid = 1;
@@ -37,4 +23,40 @@ message NotionObject {
 
   // ID of the notion object. This ID belongs to ID created by Notion App
   string notion_object_id = 4;
+}
+
+// List of UUIDs of different NotionObject
+message ChildrenNotionObjectUuids {
+  repeated string children_uuid_list = 1;
+}
+
+// Structure to store storage configuration for any one type of configuration
+message StorageConfig{
+  // Config of data stored in local directory
+  message Local {
+    // Directory in which all pages are stored
+    string page_dir = 1;
+
+    // Directory in which all databases are stored
+    string database_dir = 2;
+
+    // Directory in which all blocks are stored
+    string blocks_dir = 3;
+  }
+
+  oneof config {
+    Local local = 1;
+  }
+}
+
+message MetaData {
+  // Map for storing NotionObject with uuid as a key and NotionObject as a value
+  map<string, NotionObject> notion_object_map = 1;
+
+  // Map stores the mapping of each node UUID to different node UUIDs
+  map<string, ChildrenNotionObjectUuids> parent_uuid_2_children_uuid_map 
+    = 2;
+
+  // Storage configuration in which notion data is stored
+  StorageConfig storage_config = 3;
 }

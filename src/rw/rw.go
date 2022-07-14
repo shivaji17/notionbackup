@@ -14,6 +14,7 @@ func (d DataIdentifier) String() string {
 }
 
 type ReaderWriter interface {
+	GetStorageConfig(context.Context) (*metadata.StorageConfig, error)
 	WriteDatabase(context.Context, *notionapi.Database) (DataIdentifier, error)
 	ReadDatabase(context.Context, DataIdentifier) (*notionapi.Database, error)
 	WritePage(context.Context, *notionapi.Page) (DataIdentifier, error)
