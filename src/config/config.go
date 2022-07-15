@@ -23,6 +23,8 @@ const (
 	RESTORE OperationType = "RESTORE"
 )
 
+type ConfigOption func(*Config)
+
 type Config struct {
 	Token          string
 	Operation_Type OperationType
@@ -30,6 +32,9 @@ type Config struct {
 	DatabaseUUIDs  []string
 	Dir            string
 	Create_Dir     bool
+	NotionClient   notionclient.NotionClient
+	ReaderWriter   rw.ReaderWriter
+	TreeBuilder    builder.TreeBuilder
 }
 
 func validateUUIDs(objectType string, uuidList []string) error {
@@ -69,14 +74,17 @@ func (c *Config) validateBackupConfig() error {
 	return nil
 }
 
-func (c *Config) executeBackup(ctx context.Context) {
-	ntnClient := notionclient.GetNotionApiClient(ctx, notionapi.Token(c.Token),
-		notionapi.NewClient)
+func (c *Config) executeBackup(ctx context.Context, opts ...ConfigOption) error {
 	log := zerolog.Ctx(ctx)
-	readerWriter, err := rw.GetFileReaderWriter(ctx, c.Dir, c.Create_Dir)
+
+	c.NotionClient = notionclient.GetNotionApiClient(ctx,
+		notionapi.Token(c.Token), notionapi.NewClient)
+
+	var err error
+	c.ReaderWriter, err = rw.GetFileReaderWriter(ctx, c.Dir, c.Create_Dir)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create ReaderWriter instance")
-		return
+		return err
 	}
 
 	treeBuilderReq := &builder.TreeBuilderRequest{
@@ -84,33 +92,41 @@ func (c *Config) executeBackup(ctx context.Context) {
 		DatabaseIdList: c.DatabaseUUIDs,
 	}
 
-	treeBuilder := builder.GetExportTreebuilder(ctx, ntnClient, readerWriter,
-		treeBuilderReq)
-	tree, err := treeBuilder.BuildTree(ctx)
+	c.TreeBuilder = builder.GetExportTreebuilder(ctx, c.NotionClient,
+		c.ReaderWriter, treeBuilderReq)
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	tree, err := c.TreeBuilder.BuildTree(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to build the notion object tree")
-		return
+		return err
 	}
 
 	log.Info().Msg("Creating metadata of the exported data")
-	err = exporter.ExportTree(ctx, readerWriter, tree)
+	err = exporter.ExportTree(ctx, c.ReaderWriter, tree)
 	if err != nil {
 		log.Error().Err(err).Msg(
 			"Failed to create the metadata of the exported data. Cleaning up...")
 
-		err2 := readerWriter.CleanUp(ctx)
+		err2 := c.ReaderWriter.CleanUp(ctx)
 		if err2 != nil {
 			log.Warn().Err(err2).Msg(
 				"Failed to cleanup the exported data. Manual cleanup may be required")
 		} else {
 			log.Info().Msg("Cleanup successful")
 		}
-	} else {
-		log.Info().Msg("Backup successful")
+
+		return err
 	}
+
+	log.Info().Msg("Backup successful")
+	return nil
 }
 
-func (c *Config) Execute(ctx context.Context) {
+func (c *Config) Execute(ctx context.Context, opts ...ConfigOption) error {
 	log := zerolog.Ctx(ctx)
 	if c.Operation_Type == BACKUP {
 		log.Info().Msg("Starting backup operation")
@@ -118,13 +134,14 @@ func (c *Config) Execute(ctx context.Context) {
 		err := c.validateBackupConfig()
 		if err != nil {
 			log.Error().Err(err).Msg(logging.ValidationErr)
-			return
+			return err
 		}
 
-		c.executeBackup(ctx)
-		return
+		return c.executeBackup(ctx, opts...)
+
 	}
 
 	err := fmt.Errorf("unknown operation type provided: %s", c.Operation_Type)
 	log.Error().Err(err).Msg(logging.ValidationErr)
+	return err
 }
