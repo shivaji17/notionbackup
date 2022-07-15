@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/sawantshivaji1997/notionbackup/src/config"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/mocks"
 	"github.com/sawantshivaji1997/notionbackup/src/tree"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
@@ -122,6 +123,8 @@ func TestExecute(t *testing.T) {
 				RootNode: node.CreateRootNode(),
 			}, nil)
 
+		mockedRW.On("GetStorageConfig", context.Background()).Return(
+			&metadata.StorageConfig{}, nil)
 		mockedRW.On("WriteMetaData", context.Background(), mock.Anything).Return(
 			errGeneric)
 
@@ -156,6 +159,9 @@ func TestExecute(t *testing.T) {
 				RootNode: node.CreateRootNode(),
 			}, nil)
 
+		mockedRW.On("GetStorageConfig", context.Background()).Return(
+			&metadata.StorageConfig{}, nil)
+
 		mockedRW.On("WriteMetaData", context.Background(), mock.Anything).Return(
 			errGeneric)
 
@@ -187,6 +193,8 @@ func TestExecute(t *testing.T) {
 
 		mockedRW.On("WriteMetaData", context.Background(), mock.Anything).Return(
 			nil)
+		mockedRW.On("GetStorageConfig", context.Background()).Return(
+			&metadata.StorageConfig{}, nil)
 
 		mockedTreeBuilder.On("BuildTree", context.Background()).Return(
 			&tree.Tree{
