@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/google/uuid"
@@ -23,7 +24,28 @@ const (
 	RESTORE OperationType = "RESTORE"
 )
 
-type ConfigOption func(*Config)
+type ConfigOption func(context.Context, *Config)
+
+func Initialize(ctx context.Context, c *Config) {
+	log := zerolog.Ctx(ctx)
+	var err error
+	c.ReaderWriter, err = rw.GetFileReaderWriter(ctx, c.Dir, c.Create_Dir)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create ReaderWriter instance")
+		os.Exit(1)
+	}
+
+	c.NotionClient = notionclient.GetNotionApiClient(ctx,
+		notionapi.Token(c.Token), notionapi.NewClient)
+
+	treeBuilderReq := &builder.TreeBuilderRequest{
+		PageIdList:     c.PageUUIDs,
+		DatabaseIdList: c.DatabaseUUIDs,
+	}
+
+	c.TreeBuilder = builder.GetExportTreebuilder(ctx, c.NotionClient,
+		c.ReaderWriter, treeBuilderReq)
+}
 
 type Config struct {
 	Token          string
@@ -74,30 +96,8 @@ func (c *Config) validateBackupConfig() error {
 	return nil
 }
 
-func (c *Config) executeBackup(ctx context.Context, opts ...ConfigOption) error {
+func (c *Config) executeBackup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx)
-
-	c.NotionClient = notionclient.GetNotionApiClient(ctx,
-		notionapi.Token(c.Token), notionapi.NewClient)
-
-	var err error
-	c.ReaderWriter, err = rw.GetFileReaderWriter(ctx, c.Dir, c.Create_Dir)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create ReaderWriter instance")
-		return err
-	}
-
-	treeBuilderReq := &builder.TreeBuilderRequest{
-		PageIdList:     c.PageUUIDs,
-		DatabaseIdList: c.DatabaseUUIDs,
-	}
-
-	c.TreeBuilder = builder.GetExportTreebuilder(ctx, c.NotionClient,
-		c.ReaderWriter, treeBuilderReq)
-
-	for _, opt := range opts {
-		opt(c)
-	}
 
 	tree, err := c.TreeBuilder.BuildTree(ctx)
 	if err != nil {
@@ -126,22 +126,29 @@ func (c *Config) executeBackup(ctx context.Context, opts ...ConfigOption) error 
 	return nil
 }
 
-func (c *Config) Execute(ctx context.Context, opts ...ConfigOption) error {
+func (c *Config) execute(ctx context.Context, opts ...ConfigOption) error {
 	log := zerolog.Ctx(ctx)
 	if c.Operation_Type == BACKUP {
-		log.Info().Msg("Starting backup operation")
-
 		err := c.validateBackupConfig()
 		if err != nil {
 			log.Error().Err(err).Msg(logging.ValidationErr)
 			return err
 		}
 
-		return c.executeBackup(ctx, opts...)
+		for _, opt := range opts {
+			opt(ctx, c)
+		}
 
+		log.Info().Msg("Starting backup operation")
+
+		return c.executeBackup(ctx)
 	}
 
 	err := fmt.Errorf("unknown operation type provided: %s", c.Operation_Type)
 	log.Error().Err(err).Msg(logging.ValidationErr)
 	return err
+}
+
+func (c *Config) Execute(ctx context.Context, opts ...ConfigOption) error {
+	return c.execute(ctx, opts...)
 }

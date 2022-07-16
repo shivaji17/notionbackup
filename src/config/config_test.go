@@ -21,24 +21,42 @@ const (
 
 var errGeneric = fmt.Errorf("generic error")
 
-func getAssignMockedRWFunc(rw *mocks.ReaderWriter) config.ConfigOption {
-	return func(c *config.Config) {
+func getAssignMockedRWFunc(ctx context.Context,
+	rw *mocks.ReaderWriter) config.ConfigOption {
+	return func(ctx context.Context, c *config.Config) {
 		c.ReaderWriter = rw
 	}
 }
 
-func getAssignMockedNotionClientFunc(client *mocks.NotionClient) config.
+func getAssignMockedNotionClientFunc(ctx context.Context,
+	client *mocks.NotionClient) config.
 	ConfigOption {
-	return func(c *config.Config) {
+	return func(ctx context.Context, c *config.Config) {
 		c.NotionClient = client
 	}
 }
 
-func getAssignMockedTreeBuilderFunc(builder *mocks.TreeBuilder) config.
+func getAssignMockedTreeBuilderFunc(ctx context.Context,
+	builder *mocks.TreeBuilder) config.
 	ConfigOption {
-	return func(c *config.Config) {
+	return func(ctx context.Context, c *config.Config) {
 		c.TreeBuilder = builder
 	}
+}
+
+func TestInitialize(t *testing.T) {
+	cfg := &config.Config{
+		Token:          "mockedToken",
+		Operation_Type: config.BACKUP,
+		Dir:            TESTDATAPATH,
+		Create_Dir:     false,
+	}
+
+	config.Initialize(context.Background(), cfg)
+
+	assert.NotNil(t, cfg.NotionClient)
+	assert.NotNil(t, cfg.ReaderWriter)
+	assert.NotNil(t, cfg.TreeBuilder)
 }
 
 func TestExecute(t *testing.T) {
@@ -105,10 +123,11 @@ func TestExecute(t *testing.T) {
 			Create_Dir: false,
 		}
 
-		err := config.Execute(context.Background(),
-			getAssignMockedNotionClientFunc(mockedNotionClient),
-			getAssignMockedRWFunc(mockedRW),
-			getAssignMockedTreeBuilderFunc(mockedTreeBuilder))
+		ctx := context.Background()
+		err := config.Execute(ctx,
+			getAssignMockedNotionClientFunc(ctx, mockedNotionClient),
+			getAssignMockedRWFunc(ctx, mockedRW),
+			getAssignMockedTreeBuilderFunc(ctx, mockedTreeBuilder))
 
 		assert.NotNil(err)
 	})
@@ -141,10 +160,11 @@ func TestExecute(t *testing.T) {
 			Create_Dir: false,
 		}
 
-		err := config.Execute(context.Background(),
-			getAssignMockedNotionClientFunc(mockedNotionClient),
-			getAssignMockedRWFunc(mockedRW),
-			getAssignMockedTreeBuilderFunc(mockedTreeBuilder))
+		ctx := context.Background()
+		err := config.Execute(ctx,
+			getAssignMockedNotionClientFunc(ctx, mockedNotionClient),
+			getAssignMockedRWFunc(ctx, mockedRW),
+			getAssignMockedTreeBuilderFunc(ctx, mockedTreeBuilder))
 
 		assert.NotNil(err)
 	})
@@ -178,10 +198,11 @@ func TestExecute(t *testing.T) {
 			Create_Dir: false,
 		}
 
-		err := config.Execute(context.Background(),
-			getAssignMockedNotionClientFunc(mockedNotionClient),
-			getAssignMockedRWFunc(mockedRW),
-			getAssignMockedTreeBuilderFunc(mockedTreeBuilder))
+		ctx := context.Background()
+		err := config.Execute(ctx,
+			getAssignMockedNotionClientFunc(ctx, mockedNotionClient),
+			getAssignMockedRWFunc(ctx, mockedRW),
+			getAssignMockedTreeBuilderFunc(ctx, mockedTreeBuilder))
 
 		assert.NotNil(err)
 	})
@@ -212,10 +233,11 @@ func TestExecute(t *testing.T) {
 			Create_Dir: false,
 		}
 
-		err := config.Execute(context.Background(),
-			getAssignMockedNotionClientFunc(mockedNotionClient),
-			getAssignMockedRWFunc(mockedRW),
-			getAssignMockedTreeBuilderFunc(mockedTreeBuilder))
+		ctx := context.Background()
+		err := config.Execute(ctx,
+			getAssignMockedNotionClientFunc(ctx, mockedNotionClient),
+			getAssignMockedRWFunc(ctx, mockedRW),
+			getAssignMockedTreeBuilderFunc(ctx, mockedTreeBuilder))
 
 		assert.Nil(err)
 	})
