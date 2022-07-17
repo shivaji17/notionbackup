@@ -17,15 +17,6 @@ const (
 	DEFAULT_PAGE_SIZE = 100
 )
 
-type ObjectType int
-
-const (
-	UNKNOWN  ObjectType = 0
-	DATABASE ObjectType = 1
-	PAGE     ObjectType = 2
-	BLOCK    ObjectType = 3
-)
-
 type (
 	NewClient func(notionapi.Token, ...notionapi.ClientOption) *notionapi.Client
 )
@@ -64,6 +55,20 @@ type NotionClient interface {
 		notionapi.Cursor) ([]notionapi.Block, notionapi.Cursor, error)
 
 	GetBlockByID(context.Context, BlockID) (notionapi.Block, error)
+
+	CreatePage(context.Context, *notionapi.PageCreateRequest) (*notionapi.Page,
+		error)
+
+	CreateDatabase(context.Context, *notionapi.DatabaseCreateRequest) (
+		*notionapi.Database, error)
+
+	AppendBlocksToPage(context.Context, PageID,
+		*notionapi.AppendBlockChildrenRequest) (
+		*notionapi.AppendBlockChildrenResponse, error)
+
+	AppendBlocksToBlock(context.Context, BlockID,
+		*notionapi.AppendBlockChildrenRequest) (
+		*notionapi.AppendBlockChildrenResponse, error)
 }
 
 type NotionApiClient struct {
@@ -159,8 +164,8 @@ func (c *NotionApiClient) getDatabases(ctx context.Context, name DatabaseName,
 	return databases, newCursor, nil
 }
 
-// Get all databases. Passing empty name would mean fetching all the databases from
-// workspace
+// Get all databases. Passing empty name would mean fetching all the databases
+// from workspace
 func (c *NotionApiClient) GetAllDatabases(ctx context.Context,
 	cursor notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
 	return c.getDatabases(ctx, "" /*DatabaseName*/, cursor)
@@ -259,4 +264,30 @@ func (c *NotionApiClient) GetChildBlocksOfBlock(ctx context.Context,
 func (c *NotionApiClient) GetBlockByID(ctx context.Context,
 	id BlockID) (notionapi.Block, error) {
 	return c.Client.Block.Get(ctx, notionapi.BlockID(id))
+}
+
+// Create a page object
+func (c *NotionApiClient) CreatePage(ctx context.Context,
+	req *notionapi.PageCreateRequest) (*notionapi.Page, error) {
+	return c.Client.Page.Create(ctx, req)
+}
+
+// Create a database object
+func (c *NotionApiClient) CreateDatabase(ctx context.Context,
+	req *notionapi.DatabaseCreateRequest) (*notionapi.Database, error) {
+	return c.Client.Database.Create(ctx, req)
+}
+
+// Add blocks to given page ID
+func (c *NotionApiClient) AppendBlocksToPage(ctx context.Context, pageID PageID,
+	req *notionapi.AppendBlockChildrenRequest) (
+	*notionapi.AppendBlockChildrenResponse, error) {
+	return c.Client.Block.AppendChildren(ctx, notionapi.BlockID(pageID), req)
+}
+
+// Add subblocks to given block ID
+func (c *NotionApiClient) AppendBlocksToBlock(ctx context.Context,
+	blockID BlockID, req *notionapi.AppendBlockChildrenRequest) (
+	*notionapi.AppendBlockChildrenResponse, error) {
+	return c.Client.Block.AppendChildren(ctx, notionapi.BlockID(blockID), req)
 }

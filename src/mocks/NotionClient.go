@@ -16,6 +16,98 @@ type NotionClient struct {
 	mock.Mock
 }
 
+// AppendBlocksToBlock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *NotionClient) AppendBlocksToBlock(_a0 context.Context, _a1 notionclient.BlockID, _a2 *notionapi.AppendBlockChildrenRequest) (*notionapi.AppendBlockChildrenResponse, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *notionapi.AppendBlockChildrenResponse
+	if rf, ok := ret.Get(0).(func(context.Context, notionclient.BlockID, *notionapi.AppendBlockChildrenRequest) *notionapi.AppendBlockChildrenResponse); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*notionapi.AppendBlockChildrenResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, notionclient.BlockID, *notionapi.AppendBlockChildrenRequest) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AppendBlocksToPage provides a mock function with given fields: _a0, _a1, _a2
+func (_m *NotionClient) AppendBlocksToPage(_a0 context.Context, _a1 notionclient.PageID, _a2 *notionapi.AppendBlockChildrenRequest) (*notionapi.AppendBlockChildrenResponse, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *notionapi.AppendBlockChildrenResponse
+	if rf, ok := ret.Get(0).(func(context.Context, notionclient.PageID, *notionapi.AppendBlockChildrenRequest) *notionapi.AppendBlockChildrenResponse); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*notionapi.AppendBlockChildrenResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, notionclient.PageID, *notionapi.AppendBlockChildrenRequest) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateDatabase provides a mock function with given fields: _a0, _a1
+func (_m *NotionClient) CreateDatabase(_a0 context.Context, _a1 *notionapi.DatabaseCreateRequest) (*notionapi.Database, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *notionapi.Database
+	if rf, ok := ret.Get(0).(func(context.Context, *notionapi.DatabaseCreateRequest) *notionapi.Database); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*notionapi.Database)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *notionapi.DatabaseCreateRequest) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreatePage provides a mock function with given fields: _a0, _a1
+func (_m *NotionClient) CreatePage(_a0 context.Context, _a1 *notionapi.PageCreateRequest) (*notionapi.Page, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *notionapi.Page
+	if rf, ok := ret.Get(0).(func(context.Context, *notionapi.PageCreateRequest) *notionapi.Page); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*notionapi.Page)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *notionapi.PageCreateRequest) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAllDatabases provides a mock function with given fields: _a0, _a1
 func (_m *NotionClient) GetAllDatabases(_a0 context.Context, _a1 notionapi.Cursor) ([]notionapi.Database, notionapi.Cursor, error) {
 	ret := _m.Called(_a0, _a1)

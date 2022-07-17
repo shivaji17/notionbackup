@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
 	"github.com/sawantshivaji1997/notionbackup/src/notionclient"
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
@@ -397,7 +398,7 @@ func (srv *MockedPageService) Get(ctx context.Context,
 func (srv *MockedPageService) Create(ctx context.Context,
 	req *notionapi.PageCreateRequest) (*notionapi.Page, error) {
 	// TODO
-	return nil, nil
+	return srv.page, srv.err
 }
 
 func (srv *MockedPageService) Update(ctx context.Context, id notionapi.PageID,
@@ -452,6 +453,15 @@ func TestGetPageByID(t *testing.T) {
 		})
 
 	}
+}
+
+// No use of below UT. Just adding for code coverage
+func TestCreatePage(t *testing.T) {
+	client := GetMockedPageService(t, PAGE_JSON, nil)
+	page, err := client.CreatePage(context.Background(),
+		&notionapi.PageCreateRequest{})
+	assert.NotNil(t, page)
+	assert.Nil(t, err)
 }
 
 // Mocking the DatabaseService from github.com/jomei/notionapi
@@ -538,7 +548,7 @@ func (srv *MockedDatabaseService) Update(ctx context.Context,
 func (srv *MockedDatabaseService) Create(ctx context.Context,
 	req *notionapi.DatabaseCreateRequest) (*notionapi.Database, error) {
 	// TODO
-	return nil, nil
+	return srv.database, srv.err
 }
 
 func TestGetDatabaseByID(t *testing.T) {
@@ -653,6 +663,16 @@ func TestGetPagesOfDatabase(t *testing.T) {
 	}
 }
 
+// No use of below UT. Just adding for code coverage
+func TestCreateDatabase(t *testing.T) {
+	client := GetMockedDatabaseService(t, DATABASE_JSON,
+		DATABASE_QUERY_RESPONSE_JSON, nil)
+	database, err := client.CreateDatabase(context.Background(),
+		&notionapi.DatabaseCreateRequest{})
+	assert.NotNil(t, database)
+	assert.Nil(t, err)
+}
+
 // Mocking the BlockService from github.com/jomei/notionapi
 type MockedBlockService struct {
 	childBlocks *notionapi.GetChildrenResponse
@@ -721,7 +741,7 @@ func (srv *MockedBlockService) AppendChildren(ctx context.Context,
 	id notionapi.BlockID, req *notionapi.AppendBlockChildrenRequest) (
 	*notionapi.AppendBlockChildrenResponse, error) {
 	// TODO
-	return nil, nil
+	return &notionapi.AppendBlockChildrenResponse{}, nil
 }
 
 func (srv *MockedBlockService) Get(ctx context.Context, id notionapi.BlockID) (
@@ -853,4 +873,26 @@ func TestGetBlockByID(t *testing.T) {
 			}
 		})
 	}
+}
+
+// No use of below UT. Just adding for code coverage
+func TestAppendBlocksToPage(t *testing.T) {
+	client := GetMockedBlockService(t, PAGE_BLOCKS_JSON,
+		BLOCKS_JSON, nil)
+	rsp, err := client.AppendBlocksToPage(context.Background(),
+		notionclient.PageID(uuid.NewString()),
+		&notionapi.AppendBlockChildrenRequest{})
+	assert.NotNil(t, rsp)
+	assert.Nil(t, err)
+}
+
+// No use of below UT. Just adding for code coverage
+func TestAppendBlocksToBlock(t *testing.T) {
+	client := GetMockedBlockService(t, PAGE_BLOCKS_JSON,
+		BLOCKS_JSON, nil)
+	rsp, err := client.AppendBlocksToBlock(context.Background(),
+		notionclient.BlockID(uuid.NewString()),
+		&notionapi.AppendBlockChildrenRequest{})
+	assert.NotNil(t, rsp)
+	assert.Nil(t, err)
 }
