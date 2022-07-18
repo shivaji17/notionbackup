@@ -21,7 +21,7 @@ const (
 	TESTDATADIR       = "./../../testdata/"
 	RW_DATA_DIR       = TESTDATADIR + "rw/"
 	TESTDATAPATH      = RW_DATA_DIR + "testpath"
-	EXISTING_DIR_PATH = TESTDATAPATH
+	EXISTING_DIR_PATH = RW_DATA_DIR
 	NON_EXISTING_DIR  = TESTDATAPATH + "test_directory"
 	NON_EXISTING_DIR2 = TESTDATAPATH + "test_directory2"
 	INVALID_DIR_PATH  = "/xyz/sd/^7$%"
