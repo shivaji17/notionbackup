@@ -8,24 +8,26 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
 	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
+	"github.com/sawantshivaji1997/notionbackup/src/utils"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
 	TESTDATADIR       = "./../../testdata/"
-	TESTDATAPATH      = TESTDATADIR + "testpath"
+	RW_DATA_DIR       = TESTDATADIR + "rw/"
+	TESTDATAPATH      = RW_DATA_DIR + "testpath"
 	EXISTING_DIR_PATH = TESTDATAPATH
 	NON_EXISTING_DIR  = TESTDATAPATH + "test_directory"
 	NON_EXISTING_DIR2 = TESTDATAPATH + "test_directory2"
 	INVALID_DIR_PATH  = "/xyz/sd/^7$%"
-	NOTION_DATA_DIR   = TESTDATADIR + "notionclient/"
-	NON_EXISTING_JSON = TESTDATADIR + "xyz.json"
-	DATABASE_JSON     = NOTION_DATA_DIR + "database/database.json"
-	PAGE_JSON         = NOTION_DATA_DIR + "page/page.json"
-	BLOCK_JSON        = NOTION_DATA_DIR + "block/block.json"
+	DATABASE_ID       = "database.json"
+	PAGE_ID           = "page.json"
+	BLOCK_ID          = "block.json"
 	INVALID_JSON      = TESTDATADIR + "invalid_json.json"
 )
 
@@ -87,6 +89,105 @@ func TestGetFileReaderWriter(t *testing.T) {
 			if test.cleanupRequied {
 				os.RemoveAll(test.baseDirPath)
 			}
+		})
+	}
+}
+
+func createDirs(t *testing.T, baseDir string, pageDir, databaseDir,
+	blockDir bool, data *metadata.MetaData) string {
+	if pageDir {
+		err := utils.CreateDirectory(filepath.Join(baseDir, rw.PAGE_DIR_NAME))
+		assert.Nil(t, err)
+	}
+
+	if databaseDir {
+		err := utils.CreateDirectory(filepath.Join(baseDir, rw.DATABASE_DIR_NAME))
+		assert.Nil(t, err)
+	}
+
+	if blockDir {
+		err := utils.CreateDirectory(filepath.Join(baseDir, rw.BLOCK_DIR_NAME))
+		assert.Nil(t, err)
+	}
+	dataBytes, err := proto.Marshal(data)
+	assert.Nil(t, err)
+
+	path := filepath.Join(baseDir, "metadata_test.pb")
+	err = os.WriteFile(path, dataBytes, rw.METADATA_FILE_PERM)
+	assert.Nil(t, err)
+	return path
+}
+
+func TestGetFileReaderWriterForMetadata(t *testing.T) {
+	storageConfig := &metadata.StorageConfig{
+		Config: &metadata.StorageConfig_Local_{
+			Local: &metadata.StorageConfig_Local{
+				BlocksDir:   rw.BLOCK_DIR_NAME,
+				PageDir:     rw.PAGE_DIR_NAME,
+				DatabaseDir: rw.DATABASE_DIR_NAME,
+			},
+		},
+	}
+
+	metadataConfig := &metadata.MetaData{
+		StorageConfig: storageConfig,
+	}
+
+	tests := []struct {
+		name        string
+		pageDir     bool
+		databaseDir bool
+		blockDir    bool
+		wantErr     bool
+	}{
+		{
+			name:        "Create fileReaderWriter instance successful",
+			pageDir:     true,
+			databaseDir: true,
+			blockDir:    true,
+			wantErr:     false,
+		},
+		{
+			name:        "Page directory does not exist",
+			pageDir:     false,
+			databaseDir: true,
+			blockDir:    true,
+			wantErr:     true,
+		},
+		{
+			name:        "Database directory does not exist",
+			pageDir:     true,
+			databaseDir: false,
+			blockDir:    true,
+			wantErr:     true,
+		},
+		{
+			name:        "Block directory does not exist",
+			pageDir:     true,
+			databaseDir: true,
+			blockDir:    false,
+			wantErr:     true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			baseDir := filepath.Join(TESTDATAPATH, uuid.NewString())
+			metadataFilePath := createDirs(t, baseDir, test.pageDir,
+				test.databaseDir, test.blockDir, metadataConfig)
+			fileRW, err := rw.GetFileReaderWriterForMetadata(context.Background(),
+				metadataFilePath, metadataConfig)
+
+			if test.wantErr {
+				assert.Nil(t, fileRW)
+				assert.NotNil(t, err)
+			} else {
+				assert.NotNil(t, fileRW)
+				assert.Nil(t, err)
+			}
+
+			err = os.RemoveAll(baseDir)
+			assert.Nil(t, err)
 		})
 	}
 }
@@ -157,35 +258,35 @@ func TestWriteDatabase(t *testing.T) {
 
 func TestReadDatabase(t *testing.T) {
 	tests := []struct {
-		name     string
-		filePath string
-		wantErr  bool
+		name       string
+		identifier string
+		wantErr    bool
 	}{
 		{
-			name:     "Valid database data from file",
-			filePath: DATABASE_JSON,
-			wantErr:  false,
+			name:       "Valid database data from file",
+			identifier: DATABASE_ID,
+			wantErr:    false,
 		},
 		{
-			name:     "Invalid json data",
-			filePath: INVALID_JSON,
-			wantErr:  true,
+			name:       "Invalid json data",
+			identifier: INVALID_JSON,
+			wantErr:    true,
 		},
 		{
-			name:     "Non Existing file",
-			filePath: NON_EXISTING_JSON,
-			wantErr:  true,
+			name:       "Non Existing file",
+			identifier: "xyz.json",
+			wantErr:    true,
 		},
 	}
 
 	filerw, err := rw.GetFileReaderWriter(context.Background(),
-		TESTDATAPATH, true)
+		RW_DATA_DIR, false)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			database, err := filerw.ReadDatabase(context.Background(),
-				rw.DataIdentifier(test.filePath))
+				rw.DataIdentifier(test.identifier))
 			if test.wantErr {
 				assert.Nil(t, database)
 				assert.NotNil(t, err)
@@ -338,35 +439,35 @@ func TestWritePage(t *testing.T) {
 
 func TestReadPage(t *testing.T) {
 	tests := []struct {
-		name     string
-		filePath string
-		wantErr  bool
+		name       string
+		identifier string
+		wantErr    bool
 	}{
 		{
-			name:     "Valid page data from file",
-			filePath: PAGE_JSON,
-			wantErr:  false,
+			name:       "Valid page data from file",
+			identifier: PAGE_ID,
+			wantErr:    false,
 		},
 		{
-			name:     "Invalid json data",
-			filePath: INVALID_JSON,
-			wantErr:  true,
+			name:       "Invalid json data",
+			identifier: INVALID_JSON,
+			wantErr:    true,
 		},
 		{
-			name:     "Non Existing file",
-			filePath: NON_EXISTING_JSON,
-			wantErr:  true,
+			name:       "Non Existing file",
+			identifier: "xyz.json",
+			wantErr:    true,
 		},
 	}
 
 	filerw, err := rw.GetFileReaderWriter(context.Background(),
-		TESTDATAPATH, true)
+		RW_DATA_DIR, false)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			page, err := filerw.ReadPage(context.Background(),
-				rw.DataIdentifier(test.filePath))
+				rw.DataIdentifier(test.identifier))
 			if test.wantErr {
 				assert.Nil(t, page)
 				assert.NotNil(t, err)
@@ -443,35 +544,35 @@ func TestWriteBlock(t *testing.T) {
 
 func TestReadBlock(t *testing.T) {
 	tests := []struct {
-		name     string
-		filePath string
-		wantErr  bool
+		name       string
+		identifier string
+		wantErr    bool
 	}{
 		{
-			name:     "Valid block data from file",
-			filePath: BLOCK_JSON,
-			wantErr:  false,
+			name:       "Valid block data from file",
+			identifier: BLOCK_ID,
+			wantErr:    false,
 		},
 		{
-			name:     "Invalid json data",
-			filePath: INVALID_JSON,
-			wantErr:  true,
+			name:       "Invalid json data",
+			identifier: INVALID_JSON,
+			wantErr:    true,
 		},
 		{
-			name:     "Non Existing file",
-			filePath: NON_EXISTING_JSON,
-			wantErr:  true,
+			name:       "Non Existing file",
+			identifier: "xyz.json",
+			wantErr:    true,
 		},
 	}
 
 	filerw, err := rw.GetFileReaderWriter(context.Background(),
-		TESTDATAPATH, true)
+		RW_DATA_DIR, false)
 	assert.Nil(t, err)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			block, err := filerw.ReadBlock(context.Background(),
-				rw.DataIdentifier(test.filePath))
+				rw.DataIdentifier(test.identifier))
 			if test.wantErr {
 				assert.Nil(t, block)
 				assert.NotNil(t, err)

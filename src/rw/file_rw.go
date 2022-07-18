@@ -84,6 +84,44 @@ func GetFileReaderWriter(ctx context.Context, basePath string,
 	}, nil
 }
 
+func GetFileReaderWriterForMetadata(ctx context.Context,
+	metadataFilePath string, data *metadata.MetaData) (ReaderWriter, error) {
+	baseDir := filepath.Dir(metadataFilePath)
+	absBasePath, err := filepath.Abs(baseDir)
+	if err != nil {
+		return nil, err
+	}
+
+	pageDir := filepath.Join(absBasePath, data.StorageConfig.GetLocal().PageDir)
+	databaseDir := filepath.Join(absBasePath,
+		data.StorageConfig.GetLocal().DatabaseDir)
+	blockDir := filepath.Join(absBasePath,
+		data.StorageConfig.GetLocal().BlocksDir)
+
+	err = utils.CheckIfDirExists(pageDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = utils.CheckIfDirExists(databaseDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = utils.CheckIfDirExists(blockDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return &FileReaderWriter{
+		baseDirPath:     absBasePath,
+		databaseDirPath: databaseDir,
+		pageDirPath:     pageDir,
+		blockDirPath:    blockDir,
+		filePathList:    make([]string, 0),
+	}, nil
+}
+
 func (rw *FileReaderWriter) writeData(ctx context.Context, v interface{},
 	dirPath string) (DataIdentifier, error) {
 	dataIdentifier := uuid.NewString()
@@ -129,7 +167,8 @@ func (rw *FileReaderWriter) WriteDatabase(ctx context.Context,
 func (rw *FileReaderWriter) ReadDatabase(ctx context.Context,
 	identifier DataIdentifier) (*notionapi.Database, error) {
 	database := &notionapi.Database{}
-	err := rw.readData(ctx, string(identifier), &database)
+	err := rw.readData(ctx, filepath.Join(rw.databaseDirPath,
+		identifier.String()), &database)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +187,8 @@ func (rw *FileReaderWriter) WritePage(ctx context.Context,
 func (rw *FileReaderWriter) ReadPage(ctx context.Context,
 	identifier DataIdentifier) (*notionapi.Page, error) {
 	page := &notionapi.Page{}
-	err := rw.readData(ctx, string(identifier), &page)
+	err := rw.readData(ctx, filepath.Join(rw.pageDirPath,
+		identifier.String()), &page)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +206,8 @@ func (rw *FileReaderWriter) WriteBlock(ctx context.Context,
 
 func (rw *FileReaderWriter) ReadBlock(ctx context.Context,
 	identifier DataIdentifier) (notionapi.Block, error) {
-	databytes, err := os.ReadFile(string(identifier))
+	databytes, err := os.ReadFile(filepath.Join(rw.blockDirPath,
+		identifier.String()))
 	if err != nil {
 		return nil, err
 	}

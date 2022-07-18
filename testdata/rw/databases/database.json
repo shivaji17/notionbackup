@@ -1,0 +1,70 @@
+{
+    "object": "database",
+    "id": "db770044-b760-402e-862a-50fef8d6b5d9",
+    "cover": null,
+    "icon": {
+        "type": "emoji",
+        "emoji": "🙋"
+    },
+    "created_time": "2021-06-28T10:16:00.000Z",
+    "created_by": {
+        "object": "user",
+        "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+    },
+    "last_edited_by": {
+        "object": "user",
+        "id": "f4fc3c33-545d-43c2-924e-f18a06fb93b3"
+    },
+    "last_edited_time": "2021-06-28T10:16:00.000Z",
+    "title": [
+        {
+            "type": "text",
+            "text": {
+                "content": "Engineering Directory ",
+                "link": null
+            },
+            "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+            },
+            "plain_text": "Engineering Directory ",
+            "href": null
+        }
+    ],
+    "properties": {
+        "Date Added": {
+            "id": "%2Fkv%22",
+            "name": "Date Added",
+            "type": "created_time",
+            "created_time": {}
+        },
+        "Notes": {
+            "id": "mq%22D",
+            "name": "Notes",
+            "type": "rich_text",
+            "rich_text": {}
+        },
+        "Person": {
+            "id": "uiZ%26",
+            "name": "Person",
+            "type": "people",
+            "people": {}
+        },
+        "Name": {
+            "id": "title",
+            "name": "Name",
+            "type": "title",
+            "title": {}
+        }
+    },
+    "parent": {
+        "type": "page_id",
+        "page_id": "e62072c3-7ad9-487a-9d19-a212e862ee17"
+    },
+    "url": "https://www.notion.so/db770044b760402e862a50fef8d6b5d9",
+    "archived": false
+}
