@@ -16,7 +16,7 @@ import (
 
 const (
 	TESTDATADIR  = "./../../testdata/"
-	TESTDATAPATH = TESTDATADIR + "rw/testpath"
+	TESTDATAPATH = TESTDATADIR + "rw"
 )
 
 var errGeneric = fmt.Errorf("generic error")
