@@ -2,9 +2,11 @@ package node
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 )
 
@@ -92,12 +94,59 @@ func CreateBlockNode(ctx context.Context, block notionapi.Block,
 func CreateRootNode() *Node {
 	return &Node{
 		id:                NodeID(uuid.Nil.String()),
+		notionObjectId:    "",
 		nodeType:          ROOT,
 		sibling:           nil,
 		child:             nil,
 		storageIdentifier: "",
 		parent:            nil,
 	}
+}
+
+func CreateNode(obj *metadata.NotionObject) (*Node, error) {
+	var nodeType NodeType
+	switch obj.Type {
+	case metadata.NotionObjectType_ROOT:
+		nodeType = ROOT
+	case metadata.NotionObjectType_BLOCK:
+		nodeType = BLOCK
+	case metadata.NotionObjectType_DATABASE:
+		nodeType = DATABASE
+	case metadata.NotionObjectType_PAGE:
+		nodeType = PAGE
+	default:
+		nodeType = UNKNOWN
+	}
+
+	if nodeType == UNKNOWN {
+		return nil, fmt.Errorf("unknown notion object type: %s", nodeType)
+	}
+
+	if nodeType == ROOT {
+		if obj.Uuid != uuid.Nil.String() {
+			return nil, fmt.Errorf("not a valid root node. Uuid: %s", obj.Uuid)
+		}
+
+		if obj.NotionObjectId != "" {
+			return nil, fmt.Errorf("not a valid root node. Notion object Id: %s",
+				obj.NotionObjectId)
+		}
+
+		if obj.StorageIdentifier != "" {
+			return nil, fmt.Errorf("not a valid root node. StorageIdentifier: %s",
+				obj.StorageIdentifier)
+		}
+	}
+
+	return &Node{
+		id:                NodeID(obj.Uuid),
+		nodeType:          nodeType,
+		storageIdentifier: rw.DataIdentifier(obj.StorageIdentifier),
+		notionObjectId:    obj.NotionObjectId,
+		sibling:           nil,
+		child:             nil,
+		parent:            nil,
+	}, nil
 }
 
 // Various getter function for getting various properties of Node object

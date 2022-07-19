@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/mocks"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/iterator"
@@ -126,6 +127,113 @@ func TestCreateNodeForAllTypes(t *testing.T) {
 				assert.Nil(blockNode.GetParentNode())
 				assert.Equal(string(blockNode.GetID()), blockNode.GetID().String())
 				assert.Nil(err3)
+			}
+		})
+	}
+}
+
+func TestCreateNode(t *testing.T) {
+	tests := []struct {
+		name    string
+		object  *metadata.NotionObject
+		wantErr bool
+	}{
+		{
+			name: "Database node creation successful",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.NewString(),
+				StorageIdentifier: uuid.NewString(),
+				Type:              metadata.NotionObjectType_DATABASE,
+				NotionObjectId:    uuid.NewString(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Page node creation successful",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.NewString(),
+				StorageIdentifier: uuid.NewString(),
+				Type:              metadata.NotionObjectType_PAGE,
+				NotionObjectId:    uuid.NewString(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Block node creation successful",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.NewString(),
+				StorageIdentifier: uuid.NewString(),
+				Type:              metadata.NotionObjectType_BLOCK,
+				NotionObjectId:    uuid.NewString(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Root node creation successful",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.Nil.String(),
+				StorageIdentifier: "",
+				Type:              metadata.NotionObjectType_ROOT,
+				NotionObjectId:    "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Root node creation failed: Invalid uuid",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.NewString(),
+				StorageIdentifier: "",
+				Type:              metadata.NotionObjectType_ROOT,
+				NotionObjectId:    "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Root node creation failed: Invalid StorageIdentifier",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.Nil.String(),
+				StorageIdentifier: uuid.NewString(),
+				Type:              metadata.NotionObjectType_ROOT,
+				NotionObjectId:    "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Root node creation failed: Invalid notion object Id",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.Nil.String(),
+				StorageIdentifier: "",
+				Type:              metadata.NotionObjectType_ROOT,
+				NotionObjectId:    uuid.NewString(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Unknown node type",
+			object: &metadata.NotionObject{
+				Uuid:              uuid.NewString(),
+				StorageIdentifier: uuid.NewString(),
+				Type:              metadata.NotionObjectType_UNKNOWN,
+				NotionObjectId:    uuid.NewString(),
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			nodeObj, err := node.CreateNode(test.object)
+			if test.wantErr {
+				assert.Nil(t, nodeObj)
+				assert.NotNil(t, err)
+			} else {
+				assert.NotNil(t, nodeObj)
+				assert.Nil(t, err)
+
+				assert.Equal(t, test.object.Uuid, nodeObj.GetID().String())
+				assert.Equal(t, test.object.StorageIdentifier,
+					nodeObj.GetStorageIdentifier().String())
+				assert.Equal(t, test.object.NotionObjectId, nodeObj.GetNotionObjectId())
 			}
 		})
 	}
@@ -252,39 +360,40 @@ func TestDeleteChild(t *testing.T) {
 		assert.Nil(deletedNode)
 	})
 
-	t.Run("Node with multiple child and child is present in middle of the list", func(
-		t *testing.T) {
-		parentNode := getRandomNodeObject(t)
-		child1 := getRandomNodeObject(t)
-		child2 := getRandomNodeObject(t)
-		toDeleteNode := getRandomNodeObject(t)
-		child3 := getRandomNodeObject(t)
-		parentNode.AddChild(child1)
-		parentNode.AddChild(child2)
-		parentNode.AddChild(toDeleteNode)
-		parentNode.AddChild(child3)
+	t.Run("Node with multiple child and child is present in middle of the list",
+		func(
+			t *testing.T) {
+			parentNode := getRandomNodeObject(t)
+			child1 := getRandomNodeObject(t)
+			child2 := getRandomNodeObject(t)
+			toDeleteNode := getRandomNodeObject(t)
+			child3 := getRandomNodeObject(t)
+			parentNode.AddChild(child1)
+			parentNode.AddChild(child2)
+			parentNode.AddChild(toDeleteNode)
+			parentNode.AddChild(child3)
 
-		deletedNode := parentNode.DeleteChild(toDeleteNode.GetID())
-		assert.Equal(toDeleteNode, deletedNode)
+			deletedNode := parentNode.DeleteChild(toDeleteNode.GetID())
+			assert.Equal(toDeleteNode, deletedNode)
 
-		iter := iterator.GetChildIterator(parentNode)
-		nodeObj, err := iter.Next()
-		assert.Equal(child1, nodeObj)
-		assert.Nil(err)
+			iter := iterator.GetChildIterator(parentNode)
+			nodeObj, err := iter.Next()
+			assert.Equal(child1, nodeObj)
+			assert.Nil(err)
 
-		nodeObj, err = iter.Next()
-		assert.Equal(child2, nodeObj)
-		assert.Nil(err)
+			nodeObj, err = iter.Next()
+			assert.Equal(child2, nodeObj)
+			assert.Nil(err)
 
-		nodeObj, err = iter.Next()
-		assert.Equal(child3, nodeObj)
-		assert.Nil(err)
+			nodeObj, err = iter.Next()
+			assert.Equal(child3, nodeObj)
+			assert.Nil(err)
 
-		nodeObj, err = iter.Next()
-		assert.Equal(iterator.ErrDone, err)
-		assert.Nil(nodeObj)
+			nodeObj, err = iter.Next()
+			assert.Equal(iterator.ErrDone, err)
+			assert.Nil(nodeObj)
 
-	})
+		})
 
 	t.Run("Node with multiple child and child is present at last in list", func(
 		t *testing.T) {
