@@ -1,19 +1,25 @@
 package builder_test
 
 import (
+	"container/list"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
+	"github.com/sawantshivaji1997/notionbackup/src/exporter"
+	"github.com/sawantshivaji1997/notionbackup/src/metadata"
 	"github.com/sawantshivaji1997/notionbackup/src/mocks"
 	"github.com/sawantshivaji1997/notionbackup/src/notionclient"
 	"github.com/sawantshivaji1997/notionbackup/src/rw"
+	"github.com/sawantshivaji1997/notionbackup/src/tree"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/builder"
 	"github.com/sawantshivaji1997/notionbackup/src/tree/iterator"
+	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -396,6 +402,41 @@ func (c *mocker) mockNotionClientFunctions() {
 
 }
 
+func createNotionObjectMappingFromTree(
+	treeObj *tree.Tree) map[string]map[string]bool {
+	objectMapping := make(map[string]map[string]bool, 0)
+	childIter := iterator.GetChildIterator(treeObj.RootNode)
+
+	for {
+		obj, err := childIter.Next()
+		if err == iterator.ErrDone {
+			break
+		}
+		insertIntoObjectIdMapping(objectMapping,
+			treeObj.RootNode.GetNotionObjectId(), obj.GetNotionObjectId())
+	}
+
+	treeIter := iterator.GetTreeIterator(treeObj.RootNode)
+	for {
+		obj, err := treeIter.Next()
+		if err == iterator.ErrDone {
+			break
+		}
+
+		childIter := iterator.GetChildIterator(obj)
+		for {
+
+			childObj, err := childIter.Next()
+			if err == iterator.ErrDone {
+				break
+			}
+			insertIntoObjectIdMapping(objectMapping,
+				obj.GetNotionObjectId(), childObj.GetNotionObjectId())
+		}
+	}
+	return objectMapping
+}
+
 // ExportTreebuilder tester
 func TestExportTreeBuilder(t *testing.T) {
 	assert := assert.New(t)
@@ -519,36 +560,8 @@ func TestExportTreeBuilder(t *testing.T) {
 		assert.Nil(err)
 		assert.NotNil(tree)
 
-		actualObjectMapping := make(map[string]map[string]bool, 0)
-		childIter := iterator.GetChildIterator(tree.RootNode)
-		for {
-			obj, err := childIter.Next()
-			if err == iterator.ErrDone {
-				break
-			}
-			insertIntoObjectIdMapping(actualObjectMapping,
-				tree.RootNode.GetNotionObjectId(), obj.GetNotionObjectId())
-		}
-
-		treeIter := iterator.GetTreeIterator(tree.RootNode)
-		for {
-			obj, err := treeIter.Next()
-			if err == iterator.ErrDone {
-				break
-			}
-
-			childIter := iterator.GetChildIterator(obj)
-			for {
-				childObj, err := childIter.Next()
-				if err == iterator.ErrDone {
-					break
-				}
-				insertIntoObjectIdMapping(actualObjectMapping, obj.GetNotionObjectId(),
-					childObj.GetNotionObjectId())
-			}
-		}
-
-		assert.Equal(mockerObj.objectIdMapping, actualObjectMapping)
+		assert.Equal(mockerObj.objectIdMapping,
+			createNotionObjectMappingFromTree(tree))
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -832,36 +845,8 @@ func TestExportTreeBuilder(t *testing.T) {
 		assert.NotNil(tree2)
 		assert.Equal(tree, tree2)
 
-		actualObjectMapping := make(map[string]map[string]bool, 0)
-		childIter := iterator.GetChildIterator(tree.RootNode)
-		for {
-			obj, err := childIter.Next()
-			if err == iterator.ErrDone {
-				break
-			}
-			insertIntoObjectIdMapping(actualObjectMapping,
-				tree.RootNode.GetNotionObjectId(), obj.GetNotionObjectId())
-		}
-
-		treeIter := iterator.GetTreeIterator(tree.RootNode)
-		for {
-			obj, err := treeIter.Next()
-			if err == iterator.ErrDone {
-				break
-			}
-
-			childIter := iterator.GetChildIterator(obj)
-			for {
-				childObj, err := childIter.Next()
-				if err == iterator.ErrDone {
-					break
-				}
-				insertIntoObjectIdMapping(actualObjectMapping,
-					obj.GetNotionObjectId(), childObj.GetNotionObjectId())
-			}
-		}
-
-		assert.Equal(mockerObj.objectIdMapping, actualObjectMapping)
+		assert.Equal(mockerObj.objectIdMapping,
+			createNotionObjectMappingFromTree(tree))
 	})
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -898,35 +883,202 @@ func TestExportTreeBuilder(t *testing.T) {
 		assert.Nil(err)
 		assert.NotNil(tree)
 
-		actualObjectMapping := make(map[string]map[string]bool, 0)
-		childIter := iterator.GetChildIterator(tree.RootNode)
-		for {
-			obj, err := childIter.Next()
-			if err == iterator.ErrDone {
-				break
-			}
-			insertIntoObjectIdMapping(actualObjectMapping,
-				tree.RootNode.GetNotionObjectId(), obj.GetNotionObjectId())
+		assert.Equal(mockerObj.objectIdMapping,
+			createNotionObjectMappingFromTree(tree))
+	})
+}
+
+// Helper function to create a node object of any type (i.e. Database,
+// Page or Block)
+func getRandomNodeObject(t *testing.T) *node.Node {
+	n := rand.Intn(3)
+	mockedRW := mocks.NewReaderWriter(t)
+
+	if n == 0 {
+		mockedRW.On("WriteDatabase", context.Background(), mock.Anything).
+			Return(rw.DataIdentifier(uuid.New().String()), nil)
+		databaseNode, _ := node.CreateDatabaseNode(context.Background(),
+			&notionapi.Database{ID: notionapi.ObjectID(uuid.NewString())}, mockedRW)
+		assert.NotNil(t, databaseNode)
+		return databaseNode
+	} else if n == 1 {
+		mockedRW.On("WritePage", context.Background(), mock.Anything).
+			Return(rw.DataIdentifier(uuid.New().String()), nil)
+		pageNode, _ := node.CreatePageNode(context.Background(),
+			&notionapi.Page{ID: notionapi.ObjectID(uuid.NewString())}, mockedRW)
+		assert.NotNil(t, pageNode)
+		return pageNode
+	}
+
+	mockedRW.On("WriteBlock", context.Background(), mock.Anything).
+		Return(rw.DataIdentifier(uuid.New().String()), nil)
+	blockNode, _ := node.CreateBlockNode(context.Background(),
+		&notionapi.ParagraphBlock{BasicBlock: notionapi.BasicBlock{
+			ID: notionapi.BlockID(uuid.NewString()),
+		}}, mockedRW)
+	assert.NotNil(t, blockNode)
+	return blockNode
+}
+
+// Helper function to buid tree in breadth first manner
+// This function would build the tree having atleast 'totalNodes' total nodes
+// atmost 'expectedChildren' childs
+func createTree(t *testing.T, totalNodes int, expectedChildren int,
+	parentNode *node.Node, objectIdMapping map[string]map[string]bool) {
+
+	if parentNode == nil {
+		return
+	}
+
+	currNodeCnt := 0
+	queue := list.New()
+	queue.PushBack(parentNode)
+	for {
+		if queue.Len() == 0 {
+			break
 		}
 
-		treeIter := iterator.GetTreeIterator(tree.RootNode)
-		for {
-			obj, err := treeIter.Next()
-			if err == iterator.ErrDone {
-				break
-			}
+		if currNodeCnt >= totalNodes {
+			break
+		}
 
-			childIter := iterator.GetChildIterator(obj)
-			for {
-				childObj, err := childIter.Next()
-				if err == iterator.ErrDone {
-					break
+		front := queue.Front()
+		currNode, ok := front.Value.(*node.Node)
+		queue.Remove(front)
+		assert.True(t, ok)
+		for i := 1; i <= expectedChildren; i++ {
+			childNode := getRandomNodeObject(t)
+			currNode.AddChild(childNode)
+
+			parentId := currNode.GetNotionObjectId()
+			childId := childNode.GetNotionObjectId()
+
+			if valueMap, found := objectIdMapping[parentId]; found {
+				valueMap[childId] = true
+				objectIdMapping[parentId] = valueMap
+			} else {
+				objectIdMapping[parentId] = map[string]bool{
+					childId: true,
 				}
-				insertIntoObjectIdMapping(actualObjectMapping,
-					obj.GetNotionObjectId(), childObj.GetNotionObjectId())
 			}
+			currNodeCnt = currNodeCnt + 1
+			queue.PushBack(childNode)
 		}
 
-		assert.Equal(mockerObj.objectIdMapping, actualObjectMapping)
+	}
+}
+
+func TestMetaDataTreeBuilder(t *testing.T) {
+	assert := assert.New(t)
+
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("Tree building successful", func(t *testing.T) {
+		expectedObjectMapping := make(map[string]map[string]bool, 0)
+		rootNode := node.CreateRootNode()
+		createTree(t, 100, 10, rootNode, expectedObjectMapping)
+		dummyTree := &tree.Tree{RootNode: rootNode}
+		metadataCfg, err := exporter.CreateMetadata(context.Background(), dummyTree)
+
+		assert.NotNil(metadataCfg)
+		assert.Nil(err)
+
+		treeBuilder := builder.GetMetaDataTreeBuilder(context.Background(),
+			metadataCfg)
+		builtTree, err := treeBuilder.BuildTree(context.Background())
+		assert.NotNil(builtTree)
+		assert.Nil(err)
+
+		assert.Equal(expectedObjectMapping,
+			createNotionObjectMappingFromTree(builtTree))
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("No root node exists", func(t *testing.T) {
+		expectedObjectMapping := make(map[string]map[string]bool, 0)
+		rootNode := node.CreateRootNode()
+		createTree(t, 100, 10, rootNode, expectedObjectMapping)
+		dummyTree := &tree.Tree{RootNode: rootNode}
+		metadataCfg, err := exporter.CreateMetadata(context.Background(), dummyTree)
+
+		assert.NotNil(metadataCfg)
+		assert.Nil(err)
+
+		delete(metadataCfg.NotionObjectMap, uuid.Nil.String())
+
+		treeBuilder := builder.GetMetaDataTreeBuilder(context.Background(),
+			metadataCfg)
+		builtTree, err := treeBuilder.BuildTree(context.Background())
+		assert.Nil(builtTree)
+		assert.NotNil(err)
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("No root node exists-2", func(t *testing.T) {
+		expectedObjectMapping := make(map[string]map[string]bool, 0)
+		rootNode := node.CreateRootNode()
+		createTree(t, 100, 10, rootNode, expectedObjectMapping)
+		dummyTree := &tree.Tree{RootNode: rootNode}
+		metadataCfg, err := exporter.CreateMetadata(context.Background(), dummyTree)
+
+		assert.NotNil(metadataCfg)
+		assert.Nil(err)
+
+		delete(metadataCfg.NotionObjectMap, uuid.Nil.String())
+		delete(metadataCfg.ParentUuid_2ChildrenUuidMap, uuid.Nil.String())
+
+		treeBuilder := builder.GetMetaDataTreeBuilder(context.Background(),
+			metadataCfg)
+		builtTree, err := treeBuilder.BuildTree(context.Background())
+		assert.Nil(builtTree)
+		assert.NotNil(err)
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("Error while creating node", func(t *testing.T) {
+		metadataCfg := &metadata.MetaData{
+			NotionObjectMap: make(map[string]*metadata.NotionObject),
+		}
+
+		uuidStr := uuid.NewString()
+		metadataCfg.NotionObjectMap[uuidStr] = &metadata.NotionObject{
+			Uuid:              uuidStr,
+			NotionObjectId:    uuid.NewString(),
+			Type:              metadata.NotionObjectType_UNKNOWN,
+			StorageIdentifier: uuid.NewString(),
+		}
+
+		treeBuilder := builder.GetMetaDataTreeBuilder(context.Background(),
+			metadataCfg)
+		builtTree, err := treeBuilder.BuildTree(context.Background())
+		assert.Nil(builtTree)
+		assert.NotNil(err)
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	t.Run("Node does not exist", func(t *testing.T) {
+		metadataCfg := &metadata.MetaData{
+			NotionObjectMap: make(map[string]*metadata.NotionObject),
+			ParentUuid_2ChildrenUuidMap: make(
+				map[string]*metadata.ChildrenNotionObjectUuids),
+		}
+
+		uuidStr := uuid.NewString()
+		metadataCfg.NotionObjectMap[uuidStr] = &metadata.NotionObject{
+			Uuid:              uuidStr,
+			NotionObjectId:    uuid.NewString(),
+			Type:              metadata.NotionObjectType_DATABASE,
+			StorageIdentifier: uuid.NewString(),
+		}
+
+		metadataCfg.ParentUuid_2ChildrenUuidMap[uuidStr] =
+			&metadata.ChildrenNotionObjectUuids{
+				ChildrenUuidList: []string{uuid.NewString()},
+			}
+
+		treeBuilder := builder.GetMetaDataTreeBuilder(context.Background(),
+			metadataCfg)
+		builtTree, err := treeBuilder.BuildTree(context.Background())
+		assert.Nil(builtTree)
+		assert.NotNil(err)
 	})
 }

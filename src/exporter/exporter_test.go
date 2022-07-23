@@ -50,6 +50,7 @@ func createNode(t *testing.T, nodeType node.NodeType) *node.Node {
 func TestExportTree(t *testing.T) {
 
 	assert := assert.New(t)
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Valid root node with children", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		expectedStorageConfig := &metadata.StorageConfig{
@@ -91,6 +92,7 @@ func TestExportTree(t *testing.T) {
 		assert.Nil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Error in getting storage config", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		mockedRW.On("GetStorageConfig", context.Background()).
@@ -120,6 +122,7 @@ func TestExportTree(t *testing.T) {
 		assert.NotNil(err)
 	})
 
+	//////////////////////////////////////////////////////////////////////////////
 	t.Run("Invalid root node", func(t *testing.T) {
 		mockedRW := mocks.NewReaderWriter(t)
 		rootNode := createNode(t, node.DATABASE)

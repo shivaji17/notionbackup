@@ -49,13 +49,13 @@ func GetChildrenUuidList(nodeObj *node.Node) []string {
 	return childrenUuidList
 }
 
-func ExportTree(ctx context.Context, rw rw.ReaderWriter,
-	tree *tree.Tree) error {
+func CreateMetadata(ctx context.Context, tree *tree.Tree) (*metadata.MetaData,
+	error) {
 	log := zerolog.Ctx(ctx)
 	if tree.RootNode.GetNodeType() != node.ROOT {
 		errMsg := "root node does not have a type 'ROOT'"
 		log.Error().Msg(errMsg)
-		return fmt.Errorf(errMsg)
+		return nil, fmt.Errorf(errMsg)
 	}
 
 	metadataObj := &metadata.MetaData{
@@ -64,13 +64,22 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 			map[string]*metadata.ChildrenNotionObjectUuids),
 		StorageConfig: nil,
 	}
+
 	rootNodeNotionObject, err := Convert2ProtoNotionObject(tree.RootNode)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	metadataObj.NotionObjectMap[tree.RootNode.GetID().String()] =
 		rootNodeNotionObject
+
+	childrenUuidList := GetChildrenUuidList(tree.RootNode)
+	if len(childrenUuidList) > 0 {
+		metadataObj.ParentUuid_2ChildrenUuidMap[tree.RootNode.GetID().String()] =
+			&metadata.ChildrenNotionObjectUuids{
+				ChildrenUuidList: childrenUuidList,
+			}
+	}
 
 	iter := iterator.GetTreeIterator(tree.RootNode)
 	for {
@@ -81,7 +90,7 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 
 		notionObj, err := Convert2ProtoNotionObject(nodeObj)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		metadataObj.NotionObjectMap[nodeObj.GetID().String()] = notionObj
@@ -95,12 +104,22 @@ func ExportTree(ctx context.Context, rw rw.ReaderWriter,
 		}
 	}
 
+	return metadataObj, nil
+}
+
+func ExportTree(ctx context.Context, rw rw.ReaderWriter,
+	tree *tree.Tree) error {
+
+	metadataObj, err := CreateMetadata(ctx, tree)
+	if err != nil {
+		return err
+	}
+
 	storageConfig, err := rw.GetStorageConfig(ctx)
 	if err != nil {
 		return err
 	}
 
 	metadataObj.StorageConfig = storageConfig
-
 	return rw.WriteMetaData(ctx, metadataObj)
 }

@@ -28,7 +28,7 @@ func (builder *MetadataTreeBuilder) addChildNodes(ctx context.Context,
 	for _, child := range childList.ChildrenUuidList {
 		childNode, found := builder.nodeMap[node.NodeID(child)]
 		if !found {
-			return fmt.Errorf("node with id '%s' does not exist", childNode.GetID())
+			return fmt.Errorf("node with id '%s' does not exist", child)
 		}
 
 		parentNode.AddChild(childNode)
@@ -42,7 +42,7 @@ func (builder *MetadataTreeBuilder) buildTree(ctx context.Context) error {
 	for parent, childList := range parent2ChildListMap {
 		parentNode, found := builder.nodeMap[node.NodeID(parent)]
 		if !found {
-			return fmt.Errorf("node with id '%s' does not exist", parentNode.GetID())
+			return fmt.Errorf("node with id '%s' does not exist", parent)
 		}
 
 		err := builder.addChildNodes(ctx, parentNode, childList)
