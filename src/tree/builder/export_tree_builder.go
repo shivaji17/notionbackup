@@ -14,15 +14,6 @@ import (
 	"github.com/sawantshivaji1997/notionbackup/src/utils"
 )
 
-const (
-	PARENT_TYPE_WORKSPACE = notionapi.ParentType("workspace")
-	PARENT_TYPE_DATABASE  = notionapi.ParentType("database_id")
-	PARENT_TYPE_PAGE      = notionapi.ParentType("page_id")
-	CHILD_TYPE_PAGE       = notionapi.BlockType("child_page")
-	CHILD_TYPE_DATABASE   = notionapi.BlockType("child_database")
-	PROPERTY_TYPE_TITLE   = notionapi.PropertyType("title")
-)
-
 type ExportTreeBuilder struct {
 	notionClient               notionclient.NotionClient
 	rw                         rw.ReaderWriter
@@ -56,13 +47,13 @@ func GetExportTreebuilder(ctx context.Context,
 // Check if Parent type is workspace
 func (builderObj *ExportTreeBuilder) isParentWorkspace(
 	parent *notionapi.Parent) bool {
-	return parent.Type == PARENT_TYPE_WORKSPACE
+	return parent.Type == notionapi.ParentTypeWorkspace
 }
 
 // Helper function to add database ID to Page Id list mapping
 func (builderObj *ExportTreeBuilder) addDatabaseIdToPageMapping(
 	page *notionapi.Page) {
-	if page.Parent.Type != PARENT_TYPE_DATABASE {
+	if page.Parent.Type != notionapi.ParentTypeDatabaseID {
 		return
 	}
 
@@ -315,11 +306,11 @@ func (builderObj *ExportTreeBuilder) addBlock(ctx context.Context,
 
 	parentNode.AddChild(blockNode)
 
-	if block.GetType() == CHILD_TYPE_DATABASE {
+	if block.GetType() == notionapi.BlockTypeChildDatabase {
 		return builderObj.addDatabase(ctx, blockNode, block.GetID().String())
 	}
 
-	if block.GetType() == CHILD_TYPE_PAGE {
+	if block.GetType() == notionapi.BlockTypeChildPage {
 		return builderObj.addPage(ctx, blockNode, block.GetID().String())
 	}
 

@@ -213,7 +213,7 @@ func TestWriteDatabase(t *testing.T) {
 				Title: []notionapi.RichText{
 					{
 						Type:        notionapi.ObjectTypeText,
-						Text:        notionapi.Text{Content: "Test Database"},
+						Text:        &notionapi.Text{Content: "Test Database"},
 						Annotations: &notionapi.Annotations{Color: "default"},
 						PlainText:   "Test Database",
 						Href:        "",
@@ -356,7 +356,7 @@ func TestWritePage(t *testing.T) {
 						RichText: []notionapi.RichText{
 							{
 								Type: "text",
-								Text: notionapi.Text{
+								Text: &notionapi.Text{
 									Content: "some text",
 								},
 								Annotations: &notionapi.Annotations{
@@ -372,7 +372,7 @@ func TestWritePage(t *testing.T) {
 						Title: []notionapi.RichText{
 							{
 								Type: "text",
-								Text: notionapi.Text{
+								Text: &notionapi.Text{
 									Content: "Hello",
 								},
 								Annotations: &notionapi.Annotations{
@@ -591,7 +591,7 @@ func TestCleanUp(t *testing.T) {
 		Title: []notionapi.RichText{
 			{
 				Type:        notionapi.ObjectTypeText,
-				Text:        notionapi.Text{Content: "Test Database"},
+				Text:        &notionapi.Text{Content: "Test Database"},
 				Annotations: &notionapi.Annotations{Color: "default"},
 				PlainText:   "Test Database",
 				Href:        "",
@@ -642,7 +642,7 @@ func TestCleanUp(t *testing.T) {
 				RichText: []notionapi.RichText{
 					{
 						Type: "text",
-						Text: notionapi.Text{
+						Text: &notionapi.Text{
 							Content: "some text",
 						},
 						Annotations: &notionapi.Annotations{
@@ -658,7 +658,7 @@ func TestCleanUp(t *testing.T) {
 				Title: []notionapi.RichText{
 					{
 						Type: "text",
-						Text: notionapi.Text{
+						Text: &notionapi.Text{
 							Content: "Hello",
 						},
 						Annotations: &notionapi.Annotations{
