@@ -77,16 +77,17 @@ func InitializeRestore(ctx context.Context, c *Config) {
 }
 
 type Config struct {
-	Token            string
-	Operation_Type   OperationType
-	PageUUIDs        []string
-	DatabaseUUIDs    []string
-	Dir              string
-	Create_Dir       bool
-	NotionClient     notionclient.NotionClient
-	ReaderWriter     rw.ReaderWriter
-	TreeBuilder      builder.TreeBuilder
-	MetadataFilePath string
+	Token             string
+	Operation_Type    OperationType
+	PageUUIDs         []string
+	DatabaseUUIDs     []string
+	Dir               string
+	Create_Dir        bool
+	NotionClient      notionclient.NotionClient
+	ReaderWriter      rw.ReaderWriter
+	TreeBuilder       builder.TreeBuilder
+	MetadataFilePath  string
+	RestoreToPageUUID string
 }
 
 func validateUUIDs(objectType string, uuidList []string) error {
@@ -166,6 +167,11 @@ func (c *Config) validateRestoreConfig() error {
 		return err
 	}
 
+	err = validateUUIDs("Page", []string{c.RestoreToPageUUID})
+	if err != nil {
+		return err
+	}
+
 	c.MetadataFilePath = metadataFilePath
 	return nil
 }
@@ -180,7 +186,8 @@ func (c *Config) executeRestore(ctx context.Context) error {
 	}
 
 	log.Info().Msg("Starting data import...")
-	importerObj := importer.GetImporter(c.ReaderWriter, c.NotionClient, tree)
+	importerObj := importer.GetImporter(c.ReaderWriter, c.NotionClient,
+		c.RestoreToPageUUID, tree)
 	err = importerObj.ImportObjects(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to import data to Notion")

@@ -26,20 +26,23 @@ var FIELDS_TO_CLEAR = []string{
 }
 
 type Importer struct {
-	rwClient       rw.ReaderWriter
-	notionClient   notionclient.NotionClient
-	treeObj        *tree.Tree
-	objUuidMapping *objectUuidMapping
-	nodeQueue      *list.List
+	rwClient          rw.ReaderWriter
+	notionClient      notionclient.NotionClient
+	treeObj           *tree.Tree
+	objUuidMapping    *objectUuidMapping
+	nodeQueue         *list.List
+	restoreToPageUUID string
 }
 
 func GetImporter(rwClient rw.ReaderWriter,
-	notionClient notionclient.NotionClient, treeObj *tree.Tree) *Importer {
+	notionClient notionclient.NotionClient, restoreToPageUUID string,
+	treeObj *tree.Tree) *Importer {
 	return &Importer{
-		rwClient:     rwClient,
-		notionClient: notionClient,
-		treeObj:      treeObj,
-		nodeQueue:    list.New(),
+		rwClient:          rwClient,
+		notionClient:      notionClient,
+		treeObj:           treeObj,
+		nodeQueue:         list.New(),
+		restoreToPageUUID: restoreToPageUUID,
 		objUuidMapping: &objectUuidMapping{
 			pageMap:     make(map[notionapi.PageID]notionapi.PageID),
 			databaseMap: make(map[notionapi.DatabaseID]notionapi.DatabaseID),
@@ -54,7 +57,7 @@ func (c *Importer) getParentObject(nodeObj *node.Node,
 	if nodeObj.GetParentNode().GetNodeType() == node.ROOT {
 		return &notionapi.Parent{
 			Type:   notionapi.ParentTypePageID,
-			PageID: "1791c709024f4c898598ef5db4ea33af",
+			PageID: notionapi.PageID(c.restoreToPageUUID),
 		}, nil
 	}
 

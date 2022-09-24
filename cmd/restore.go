@@ -10,6 +10,7 @@ import (
 )
 
 var metadataFilePath string
+var restoreToPageUUID string
 
 // restoreCmd represents the restore command
 var restoreCmd = &cobra.Command{
@@ -26,6 +27,8 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	restoreCmd.Flags().StringVarP(&metadataFilePath, "file-path", "f", "",
 		"metadata file path")
+	restoreCmd.Flags().StringVarP(&restoreToPageUUID, "page", "p", "",
+		"page uuid to which all data needs to be restored")
 }
 
 func Restore(cmd *cobra.Command, args []string) error {
@@ -37,9 +40,10 @@ func Restore(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	cfg := &config.Config{
-		Token:            notionToken,
-		Operation_Type:   config.RESTORE,
-		MetadataFilePath: metadataFilePath,
+		Token:             notionToken,
+		Operation_Type:    config.RESTORE,
+		MetadataFilePath:  metadataFilePath,
+		RestoreToPageUUID: restoreToPageUUID,
 	}
 
 	ctx := log.WithContext(context.Background())
