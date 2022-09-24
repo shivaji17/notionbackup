@@ -93,9 +93,10 @@ func TestInitializeRestore(t *testing.T) {
 		{
 			name: "All fields are valid",
 			cfg: &config.Config{
-				Token:            MOCKED_TOKEN,
-				Operation_Type:   config.RESTORE,
-				MetadataFilePath: METADATA_FILEPATH,
+				Token:             MOCKED_TOKEN,
+				Operation_Type:    config.RESTORE,
+				MetadataFilePath:  METADATA_FILEPATH,
+				RestoreToPageUUID: uuid.NewString(),
 			},
 			shouldPanic: false,
 		},
@@ -341,9 +342,10 @@ func TestExecute(t *testing.T) {
 			nil, errGeneric)
 
 		config := &config.Config{
-			Token:            MOCKED_TOKEN,
-			Operation_Type:   config.RESTORE,
-			MetadataFilePath: METADATA_FILEPATH,
+			Token:             MOCKED_TOKEN,
+			Operation_Type:    config.RESTORE,
+			MetadataFilePath:  METADATA_FILEPATH,
+			RestoreToPageUUID: uuid.NewString(),
 		}
 
 		ctx := context.Background()
@@ -377,9 +379,10 @@ func TestExecute(t *testing.T) {
 			&tree.Tree{RootNode: rootNode}, nil)
 
 		config := &config.Config{
-			Token:            MOCKED_TOKEN,
-			Operation_Type:   config.RESTORE,
-			MetadataFilePath: METADATA_FILEPATH,
+			Token:             MOCKED_TOKEN,
+			Operation_Type:    config.RESTORE,
+			MetadataFilePath:  METADATA_FILEPATH,
+			RestoreToPageUUID: uuid.NewString(),
 		}
 
 		err = config.Execute(ctx,
@@ -400,9 +403,10 @@ func TestExecute(t *testing.T) {
 			&tree.Tree{RootNode: node.CreateRootNode()}, nil)
 
 		config := &config.Config{
-			Token:            MOCKED_TOKEN,
-			Operation_Type:   config.RESTORE,
-			MetadataFilePath: METADATA_FILEPATH,
+			Token:             MOCKED_TOKEN,
+			Operation_Type:    config.RESTORE,
+			MetadataFilePath:  METADATA_FILEPATH,
+			RestoreToPageUUID: uuid.NewString(),
 		}
 
 		err := config.Execute(ctx,
