@@ -57,6 +57,6 @@ func TakeLocalBackup(cmd *cobra.Command, args []string) error {
 
 	ctx := log.WithContext(context.Background())
 
-	cfg.Execute(ctx, config.Initialize)
+	cfg.Execute(ctx, config.InitializeBackup)
 	return nil
 }
