@@ -1,4 +1,4 @@
-module github.com/sawantshivaji1997/notionbackup
+module github.com/shivaji17/notionbackup
 
 go 1.16
 

@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"fmt"
 
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/tree/node"
 )
 
 // TreeIterator would iterate the whole tree or subtree depending on the node

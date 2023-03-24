@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sawantshivaji1997/notionbackup/src/config"
-	"github.com/sawantshivaji1997/notionbackup/src/utils"
+	"github.com/shivaji17/notionbackup/src/config"
+	"github.com/shivaji17/notionbackup/src/utils"
 	"github.com/spf13/cobra"
 )
 

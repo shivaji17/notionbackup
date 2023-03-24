@@ -3,7 +3,7 @@ package iterator
 import (
 	"fmt"
 
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/tree/node"
 )
 
 // Done is returned by an iterator's Next method when the iteration is

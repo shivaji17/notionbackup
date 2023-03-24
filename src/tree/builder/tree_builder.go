@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sawantshivaji1997/notionbackup/src/tree"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/tree"
+	"github.com/shivaji17/notionbackup/src/tree/node"
 )
 
 type TreeBuilderRequest struct {

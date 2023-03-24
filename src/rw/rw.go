@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jomei/notionapi"
-	"github.com/sawantshivaji1997/notionbackup/src/metadata"
+	"github.com/shivaji17/notionbackup/src/metadata"
 )
 
 type DataIdentifier string

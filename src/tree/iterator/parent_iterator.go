@@ -1,6 +1,6 @@
 package iterator
 
-import "github.com/sawantshivaji1997/notionbackup/src/tree/node"
+import "github.com/shivaji17/notionbackup/src/tree/node"
 
 type ParentIterator struct {
 	currentNode *node.Node

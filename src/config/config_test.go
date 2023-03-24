@@ -7,12 +7,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
-	"github.com/sawantshivaji1997/notionbackup/src/config"
-	"github.com/sawantshivaji1997/notionbackup/src/metadata"
-	"github.com/sawantshivaji1997/notionbackup/src/mocks"
-	"github.com/sawantshivaji1997/notionbackup/src/rw"
-	"github.com/sawantshivaji1997/notionbackup/src/tree"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/config"
+	"github.com/shivaji17/notionbackup/src/metadata"
+	"github.com/shivaji17/notionbackup/src/mocks"
+	"github.com/shivaji17/notionbackup/src/rw"
+	"github.com/shivaji17/notionbackup/src/tree"
+	"github.com/shivaji17/notionbackup/src/tree/node"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

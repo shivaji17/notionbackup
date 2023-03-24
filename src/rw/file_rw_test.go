@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
-	"github.com/sawantshivaji1997/notionbackup/src/metadata"
-	"github.com/sawantshivaji1997/notionbackup/src/rw"
-	"github.com/sawantshivaji1997/notionbackup/src/utils"
+	"github.com/shivaji17/notionbackup/src/metadata"
+	"github.com/shivaji17/notionbackup/src/rw"
+	"github.com/shivaji17/notionbackup/src/utils"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
