@@ -6,12 +6,12 @@ import (
 
 	"github.com/jomei/notionapi"
 	"github.com/rs/zerolog"
-	"github.com/sawantshivaji1997/notionbackup/src/logging"
-	"github.com/sawantshivaji1997/notionbackup/src/notionclient"
-	"github.com/sawantshivaji1997/notionbackup/src/rw"
-	"github.com/sawantshivaji1997/notionbackup/src/tree"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
-	"github.com/sawantshivaji1997/notionbackup/src/utils"
+	"github.com/shivaji17/notionbackup/src/logging"
+	"github.com/shivaji17/notionbackup/src/notionclient"
+	"github.com/shivaji17/notionbackup/src/rw"
+	"github.com/shivaji17/notionbackup/src/tree"
+	"github.com/shivaji17/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/utils"
 )
 
 type ExportTreeBuilder struct {

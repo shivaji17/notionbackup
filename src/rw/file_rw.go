@@ -10,9 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
 	"github.com/rs/zerolog"
-	"github.com/sawantshivaji1997/notionbackup/src/logging"
-	"github.com/sawantshivaji1997/notionbackup/src/metadata"
-	"github.com/sawantshivaji1997/notionbackup/src/utils"
+	"github.com/shivaji17/notionbackup/src/logging"
+	"github.com/shivaji17/notionbackup/src/metadata"
+	"github.com/shivaji17/notionbackup/src/utils"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog"
-	"github.com/sawantshivaji1997/notionbackup/src/metadata"
-	"github.com/sawantshivaji1997/notionbackup/src/rw"
-	"github.com/sawantshivaji1997/notionbackup/src/tree"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/iterator"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/metadata"
+	"github.com/shivaji17/notionbackup/src/rw"
+	"github.com/shivaji17/notionbackup/src/tree"
+	"github.com/shivaji17/notionbackup/src/tree/iterator"
+	"github.com/shivaji17/notionbackup/src/tree/node"
 )
 
 func Convert2ProtoNotionObject(nodeObj *node.Node) (*metadata.NotionObject,

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jomei/notionapi"
-	"github.com/sawantshivaji1997/notionbackup/src/utils"
+	"github.com/shivaji17/notionbackup/src/utils"
 )
 
 func copyBlock(block notionapi.Block) notionapi.Block {

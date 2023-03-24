@@ -8,10 +8,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jomei/notionapi"
-	"github.com/sawantshivaji1997/notionbackup/src/mocks"
-	"github.com/sawantshivaji1997/notionbackup/src/rw"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/iterator"
-	"github.com/sawantshivaji1997/notionbackup/src/tree/node"
+	"github.com/shivaji17/notionbackup/src/mocks"
+	"github.com/shivaji17/notionbackup/src/rw"
+	"github.com/shivaji17/notionbackup/src/tree/iterator"
+	"github.com/shivaji17/notionbackup/src/tree/node"
 	"github.com/stretchr/testify/assert"
 )
 
