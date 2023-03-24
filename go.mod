@@ -8,9 +8,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/cobra v1.5.0
-	github.com/spf13/viper v1.13.0
-	github.com/stretchr/testify v1.8.0
-	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8 // indirect
-	golang.org/x/term v0.0.0-20220919170432-7a66f970e087
+	github.com/spf13/viper v1.15.0
+	github.com/stretchr/testify v1.8.1
+	golang.org/x/term v0.3.0
 	google.golang.org/protobuf v1.28.1
 )
