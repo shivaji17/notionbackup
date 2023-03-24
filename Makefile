@@ -30,7 +30,7 @@ fmt:
 	go fmt $(ROOT_DIR)/...
 
 .PHONY: all
-all: fmt tidy test
+all: tidy fmt test
 
 .PHONY: clean
 clean:
