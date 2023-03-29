@@ -21,13 +21,6 @@ type (
 	NewClient func(notionapi.Token, ...notionapi.ClientOption) *notionapi.Client
 )
 
-// Currently, Filter type in github.com/jomei/notionapi has type interface so
-// it's concrete implementation here
-type Filter struct {
-	Value    string `json:"value"`
-	Property string `json:"property"`
-}
-
 type NotionClient interface {
 	GetAllPages(context.Context, notionapi.Cursor) ([]notionapi.Page,
 		notionapi.Cursor, error)
@@ -89,7 +82,7 @@ func (c *NotionApiClient) search(ctx context.Context, objectType string,
 	cursor notionapi.Cursor, query string) (*notionapi.SearchResponse, error) {
 	req := &notionapi.SearchRequest{
 		Query: query,
-		Filter: Filter{
+		Filter: notionapi.SearchFilter{
 			Value:    objectType,
 			Property: "object",
 		},
