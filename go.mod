@@ -10,6 +10,6 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/term v0.15.0
+	golang.org/x/term v0.16.0
 	google.golang.org/protobuf v1.32.0
 )
