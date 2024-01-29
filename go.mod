@@ -3,7 +3,7 @@ module github.com/shivaji17/notionbackup
 go 1.16
 
 require (
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/jomei/notionapi v1.12.1
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.31.0
